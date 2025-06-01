@@ -86,60 +86,72 @@ class _ChatScreenState extends State<ChatScreen> {
             fromId: '1',
             question: "How does async work in Dart?",
             answer: '''
-        # Inde interea
+      The reason **hover effect is not working** in your code is because `isHover` is defined **inside the `build` method**, meaning it resets to `false` every time the widget rebuilds — so the `setState` changes have no effect.
 
-## Rettulit principium
+### ✅ Fix: Move `isHover` to the class level
 
-Lorem markdownum forem: furtim: movi pastor, cumque nec; terrae perque nobis.
-Summo oret census *sistere* vidit Latiis novis Cinyphiumque niveis tutam,
-latitavimus. Bella et est accipiunt moenia altis et iam prius languere agricolam
-omnesque, in.
+Update your code like this:
 
-> Inter nostrae Tellus opem inops? [Funeris](http://herbis-ne.org/pectore) summo
-> Lycaon convivia tutaeque. Quid tum tota orbem morti gradumque laetos, aliis
-> pontus ademit? Quisquam aequora, cetera tauri cvrrvs, neve perosa, data vir!
-> Secreta illud, more arida Gallicus!
+```dart
+class _ChatItemState extends State<ChatItem> {
+  bool isHover = false; // <--- move it here, outside build()
 
-## Retia mota foedantem fuit
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onExit: (_) {
+        setState(() {
+          isHover = false;
+        });
+      },
+      onEnter: (_) {
+        setState(() {
+          isHover = true;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3.0),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: (widget.isSelected || isHover)
+                  ? AppColors.theme['primaryColor']!.withOpacity(0.2)
+                  : AppColors.theme['backgroundColor'],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(widget.title, style: GoogleFonts.poppins()),
+                  if (widget.isSelected)
+                    IconButton(
+                      icon: const Icon(Icons.more_horiz_outlined),
+                      onPressed: () {
+                        // Your action here
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
 
-Precanda hinc fiet voracior; tempora constitit trabes. Sed simul relinquant ea
-**quis herboso**. Manu haec linquit Siculis, an caelum misso in **per arbore**,
-luctantiaque matres novaque [subitam](http://temptant.io/interdum-meritis) ille
-dixit, venienti.
+### 🔁 Summary:
 
-> Atris vellere lumine molle nequiquam tu gentis, nox **enim stridore**, numerum
-> gradientis Olympum ignarus. Agros gurges *pugnae* inque, est est quam albus,
-> per caespite vulnere moly, ab *meruit*, externo. Ipsis hastam se ipse Stygius
-> ipsa solus sub motae: mansit Threicio adstitit. Unius aetherioque daedalus, et
-> a Aesacon [inmensa](http://esset-gramen.io/), pictarumque.
+* `bool isHover` must be a **state variable** so it persists across rebuilds.
+* When defined inside `build()`, it resets to `false` every frame, so you'll never see the hover effect.
 
-## Possit flamine tecta ut rura harenas
+Let me know if you'd also like to add animated transitions or make it mobile-friendly!
 
-Est ordine Stygius non, alta sibi, laetitiae antiquum formaque *illic nare*
-capacem sorores undas nascentia mihique? Fibra *quae pars esse* ministri
-rotatis, coimus ego, dixit pro huius. Totoque squamis cavernis est, cum *non
-superatae* proxima, reportat, in terris, miserum multaque?
-
-- Stheneleius quod arduus
-- Commune latrator dissimilisque postquam vel tremor nomen
-- Visaque ferventi longisque ire
-- Vidi sequente Lichan
-- Et in fecit femineae
-- Litoris viros rex sunt tum leti quot
-
-## Longo re serva
-
-In victorem solvit, acta prole **attulerat Threicio** ager quisquis morata
-virtus avem citius aether. Quae tangunt si videres soror.
-
-Iuvet illam, multarum manu laniare itum cerva at animosus Tethyn insonuit.
-Iasonis laudis mallem nam! Est et enixa opacas mortale, sanguine, ut oravere
-debes.
-
-Gravem grave, et lacrimas Parosque! Se nomen, ne **animam valvis** credi
-pendentia abscidit bracchia levabas omnibus, talia missos signa. Addit aut regna
-interdum sic esset, mortalem est irae moriens pleni **traxit**, desierant. Quam
-superantque *medio latet* locum antris, priora?
 
             
           '''
@@ -308,16 +320,50 @@ superantque *medio latet* locum antris, priora?
                 const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
                 child: Column(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        "assets/logo/logo.png",
-                        height: 50,
-                        width: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                   Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                     child: Row(
+                     mainAxisAlignment :MainAxisAlignment.spaceBetween,
+                       children: [
+                         ClipRRect(
+                           borderRadius: BorderRadius.circular(12),
+                           child: Image.asset(
+                             "assets/logo/logo.png",
+                             height: 40,
+                             width: 100,
+                             fit: BoxFit.cover,
+                           ),
+                         ),
+
+                         Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.theme['backgroundColor'],
+                            borderRadius: BorderRadius.circular(5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                offset: Offset(0, 1),
+                                blurRadius: 5,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                           child: Padding(
+                             padding: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 5),
+                             child: Row(
+                               children: [
+                                 Icon(Icons.add,),
+                                 Text("ADD",style: GoogleFonts.poppins(),),
+                               ],
+                             ),
+                           ),
+
+                         )
+
+                       ],
+                     ),
+                   ),
+                     SizedBox(height: 10),
                     Divider(
                       color:
                       AppColors.theme['tertiaryColor']!.withOpacity(0.1),
@@ -442,7 +488,6 @@ superantque *medio latet* locum antris, priora?
                                       },
                                     ),
 
-
                                     const SizedBox(height: 10),
 
                                     const Divider(),
@@ -452,18 +497,16 @@ superantque *medio latet* locum antris, priora?
                             ),
                           ],
                         )
-                            : Center(
-                          child: Text(
-                            "Select a chat from the drawer",
-                            style: GoogleFonts.poppins(fontSize: 20),
-                          ),
-                        ),
+                            : Padding(
+                              padding:  EdgeInsets.symmetric(vertical: mq.height*0.3),
+                              child: Text("Click + to create new chat",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 25),),
+                            ),
                       ),
                     ),
                   ),
 
                   // Sticky bottom container
-                  Padding(
+                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
                     child: Container(
                       height: 100,
