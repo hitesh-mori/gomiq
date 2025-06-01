@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gomiq/theme/colors.dart';
 import 'package:gomiq/widgets/custom_button.dart';
 import 'package:gomiq/widgets/custom_text_feild.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class LoginRegister extends StatefulWidget {
+  const LoginRegister({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<LoginRegister> createState() => _LoginRegisterState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _LoginRegisterState extends State<LoginRegister> {
   late Size mq;
   bool isLogin = true;
 
@@ -47,7 +48,6 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
                       // Rounded logo
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                         width: 200,
                         decoration: BoxDecoration(
                           color:
-                          AppColors.theme['primaryColor']!.withOpacity(0.1),
+                              AppColors.theme['primaryColor']!.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Stack(
@@ -77,7 +77,8 @@ class _HomePageState extends State<HomePage> {
                                   ? Alignment.centerLeft
                                   : Alignment.centerRight,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5.0),
                                 child: Container(
                                   height: 40,
                                   width: 100,
@@ -147,8 +148,8 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 16),
                   child: AnimatedSwitcher(
                     duration: Duration(milliseconds: 300),
                     child: isLogin ? _buildLoginForm() : _buildRegisterForm(),
@@ -167,7 +168,6 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.asset(
@@ -176,10 +176,8 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.cover,
           ),
         ),
-
         Container(
           key: ValueKey('login'),
-
           height: 400,
           width: 300,
           decoration: BoxDecoration(
@@ -198,31 +196,48 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-                Text("L O G I N",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: AppColors.theme['primaryColor']),),
-
-                SizedBox(height: 20,),
-
-
-                CustomTextFeild(hintText: 'Enter email', isNumber: false, prefixicon: Icon(Icons.email_outlined), obsecuretext: false,),
-
-                CustomTextFeild(hintText: 'Enter password', isNumber: false, prefixicon: Icon(Icons.password), obsecuretext: true,),
-
-                SizedBox(height: 20,),
-
-                CustomButton(loadWidth: 200,isLoading: false,height: 50, width: 300, textColor: Colors.white, bgColor:AppColors.theme['primaryColor'], onTap: () {  }, title: 'Login',),
-
-                SizedBox(height: 20,),
-
-
+                Text(
+                  "L O G I N",
+                  style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.theme['primaryColor']),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                CustomTextFeild(
+                  hintText: 'Enter email',
+                  isNumber: false,
+                  prefixicon: Icon(Icons.email_outlined),
+                  obsecuretext: false,
+                ),
+                CustomTextFeild(
+                  hintText: 'Enter password',
+                  isNumber: false,
+                  prefixicon: Icon(Icons.password),
+                  obsecuretext: true,
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                CustomButton(
+                  loadWidth: 200,
+                  isLoading: false,
+                  height: 50,
+                  width: 300,
+                  textColor: Colors.white,
+                  bgColor: AppColors.theme['primaryColor'],
+                  onTap: () {},
+                  title: 'Login',
+                ),
+                SizedBox(
+                  height: 20,
+                ),
               ],
-
-
             ),
           ),
-
-
-          ),
+        ),
       ],
     );
   }
@@ -232,7 +247,6 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.asset(
@@ -241,10 +255,8 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.cover,
           ),
         ),
-
         Container(
           key: ValueKey('register'),
-
           height: 400,
           width: 300,
           decoration: BoxDecoration(
@@ -263,34 +275,57 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-                Text("R E G I S T E R",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: AppColors.theme['primaryColor']),),
-
-                SizedBox(height: 20,),
-
-                CustomTextFeild(hintText: 'Enter username', isNumber: false, prefixicon: Icon(Icons.email_outlined), obsecuretext: false,),
-
-                CustomTextFeild(hintText: 'Enter email', isNumber: false, prefixicon: Icon(Icons.email_outlined), obsecuretext: false,),
-
-                CustomTextFeild(hintText: 'Enter password', isNumber: false, prefixicon: Icon(Icons.password), obsecuretext: true,),
-
-                SizedBox(height: 20,),
-
-                CustomButton(loadWidth: 200,isLoading: false,height: 50, width: 300, textColor: Colors.white, bgColor:AppColors.theme['primaryColor'], onTap: () {  }, title: 'Register',),
-
-                SizedBox(height: 20,),
-
-
+                Text(
+                  "R E G I S T E R",
+                  style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.theme['primaryColor']),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                CustomTextFeild(
+                  hintText: 'Enter username',
+                  isNumber: false,
+                  prefixicon: Icon(Icons.email_outlined),
+                  obsecuretext: false,
+                ),
+                CustomTextFeild(
+                  hintText: 'Enter email',
+                  isNumber: false,
+                  prefixicon: Icon(Icons.email_outlined),
+                  obsecuretext: false,
+                ),
+                CustomTextFeild(
+                  hintText: 'Enter password',
+                  isNumber: false,
+                  prefixicon: Icon(Icons.password),
+                  obsecuretext: true,
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                CustomButton(
+                  loadWidth: 200,
+                  isLoading: false,
+                  height: 50,
+                  width: 300,
+                  textColor: Colors.white,
+                  bgColor: AppColors.theme['primaryColor'],
+                  onTap: () {
+                    context.go('/chat');
+                  },
+                  title: 'Register',
+                ),
+                SizedBox(
+                  height: 20,
+                ),
               ],
-
-
             ),
           ),
-
-
         ),
       ],
     );
   }
-
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart' ;
-import 'package:gomiq/pages/home_page.dart';
+import 'package:gomiq/pages/auth_pages/login_register.dart';
+
+import 'helper_functions/router.dart';
 
 
 late Size mq ;
@@ -19,9 +21,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      title: 'GomIQ',
+      theme: ThemeData(
+        useMaterial3: true,
+      ),
+      routerConfig: router,
     );
   }
 }
