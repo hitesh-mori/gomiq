@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gomiq/apis/auth_apis.dart';
+import 'package:gomiq/helper_functions/web_toasts.dart';
 import 'package:gomiq/theme/colors.dart';
 import 'package:gomiq/widgets/custom_button.dart';
 import 'package:gomiq/widgets/custom_text_feild.dart';
@@ -15,6 +17,25 @@ class LoginRegister extends StatefulWidget {
 class _LoginRegisterState extends State<LoginRegister> {
   late Size mq;
   bool isLogin = true;
+
+
+  // for log in
+  bool isLShow  = false;
+  bool isLLoading = false;
+
+  final TextEditingController _usernameLController = TextEditingController();
+  final TextEditingController _emailLController = TextEditingController();
+  final TextEditingController _passwordLController = TextEditingController();
+
+
+   // sign up
+
+  bool isShow  = false;
+  bool isLoading = false;
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -208,29 +229,68 @@ class _LoginRegisterState extends State<LoginRegister> {
                 ),
                 CustomTextFeild(
                   hintText: 'Enter email',
+                  controller: _emailLController,
                   isNumber: false,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
                 ),
                 CustomTextFeild(
+                  controller: _passwordLController,
                   hintText: 'Enter password',
                   isNumber: false,
                   prefixicon: Icon(Icons.password),
-                  obsecuretext: true,
+                  obsecuretext : isLShow,
+                  suffix: IconButton(
+                    icon: Icon(
+                      isLShow ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isLShow = !isLShow;
+                      });
+                    },
+                  ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
                 CustomButton(
                   loadWidth: 200,
-                  isLoading: false,
+                  isLoading: isLLoading,
                   height: 50,
                   width: 300,
                   textColor: Colors.white,
                   bgColor: AppColors.theme['primaryColor'],
-                  onTap: () {},
+                  onTap: () async {
+
+                    setState(() => isLLoading = true);
+
+                    final email = _emailLController.text.trim();
+                    final password = _passwordLController.text.trim();
+
+                    final result = await AuthApis.signIn(email, password);
+
+                    setState(() => isLLoading = false);
+
+                    if (result.containsKey('user_id')) {
+                      WebToasts.showToastification("Confirmation", "Logged In Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
+                      context.go('/chat');
+                    } else {
+
+                      WebToasts.showToastification(
+                        "Failed",
+                        result['error'] ?? "Login failed",
+                        const Icon(Icons.error_outline, color: Colors.red),
+                        context,
+                      );
+
+                    }
+                  },
+
                   title: 'Login',
                 ),
+
                 SizedBox(
                   height: 20,
                 ),
@@ -244,6 +304,7 @@ class _LoginRegisterState extends State<LoginRegister> {
 
   // Register form
   Widget _buildRegisterForm() {
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -288,34 +349,72 @@ class _LoginRegisterState extends State<LoginRegister> {
                 CustomTextFeild(
                   hintText: 'Enter username',
                   isNumber: false,
+                  controller: _usernameController,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
                 ),
                 CustomTextFeild(
                   hintText: 'Enter email',
                   isNumber: false,
+                  controller: _emailController,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
                 ),
                 CustomTextFeild(
                   hintText: 'Enter password',
                   isNumber: false,
+                  controller: _passwordController,
                   prefixicon: Icon(Icons.password),
-                  obsecuretext: true,
+                  obsecuretext : isShow,
+                  suffix: IconButton(
+                    icon: Icon(
+                      isShow ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isShow = !isShow;
+                      });
+                    },
+                  ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
                 CustomButton(
                   loadWidth: 200,
-                  isLoading: false,
+                  isLoading: isLoading,
                   height: 50,
                   width: 300,
                   textColor: Colors.white,
                   bgColor: AppColors.theme['primaryColor'],
-                  onTap: () {
-                    context.go('/chat');
+                  onTap: () async {
+
+                    setState(() => isLoading = true);
+
+                    final username = _usernameController.text.trim();
+                    final email = _emailController.text.trim();
+                    final password = _passwordController.text.trim();
+
+                    final result = await AuthApis.signUp(username, email, password);
+
+                    setState(() => isLoading = false);
+
+                    if (result.containsKey('user_id')) {
+                      WebToasts.showToastification("Confirmation", "Registered Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
+                      context.go('/chat');
+                    } else {
+
+                      WebToasts.showToastification(
+                        "Failed",
+                        result['error'] ?? "Registration failed",
+                        const Icon(Icons.error_outline, color: Colors.red),
+                        context,
+                      );
+
+                    }
                   },
+
                   title: 'Register',
                 ),
                 SizedBox(
@@ -328,4 +427,5 @@ class _LoginRegisterState extends State<LoginRegister> {
       ],
     );
   }
+
 }
