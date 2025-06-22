@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 import 'package:gomiq/provider/user_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -40,13 +41,23 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    initAppData();
     fetchChats();
+  }
+
+  Future<void> initAppData() async {
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    await userProvider.initUser();
   }
 
   // Fetch chats and update UI
   Future<void> fetchChats() async {
 
-    final fetchedChats = await ChatApi.fetchChatsWithContent("ab9aa5c7-9854-48c1-8686-ee187a5a4f9a");
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    final fetchedChats = await ChatApi.fetchChatsWithContent(userProvider.currUserId ?? "");
 
     setState(() {
       allChats = fetchedChats ;
@@ -245,7 +256,11 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             IconButton(
                               icon: Icon(Icons.logout),
-                              onPressed: (){
+                              onPressed: ()async{
+
+                                context.go('/');
+
+                                await userProvider.logout() ;
 
                               },
                             )

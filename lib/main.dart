@@ -2,6 +2,8 @@ import 'package:flutter/material.dart' ;
 import 'package:gomiq/pages/auth_pages/login_register.dart';
 import 'package:gomiq/provider/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'helper_functions/router.dart';
 
@@ -9,19 +11,24 @@ import 'helper_functions/router.dart';
 late Size mq ;
 
 
-void main(){
-  runApp(MyApp()) ;
+void main()async{
+
+  WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
       MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (context)=>UserProvider()),
           ],
-          child: MyApp())
+          child: MyApp()
+      )
   );
+
 }
 
 class MyApp extends StatefulWidget {
+
+
   const MyApp({super.key});
 
   @override
@@ -37,7 +44,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      routerConfig: router,
+      routerConfig: createRouter(context),
     );
   }
 }

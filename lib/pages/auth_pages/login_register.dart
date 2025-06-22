@@ -8,6 +8,7 @@ import 'package:gomiq/widgets/custom_button.dart';
 import 'package:gomiq/widgets/custom_text_feild.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginRegister extends StatefulWidget {
   const LoginRegister({super.key});
@@ -39,11 +40,11 @@ class _LoginRegisterState extends State<LoginRegister> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> initAppData(String uid) async {
+  Future<void> initAppData() async {
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    await userProvider.initUser(uid);
+    await userProvider.initUser();
   }
 
   @override
@@ -283,7 +284,9 @@ class _LoginRegisterState extends State<LoginRegister> {
                     setState(() => isLLoading = false);
 
                     if (result.containsKey('user_id')) {
-                      initAppData(result['user_id']) ;
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('user_id', result['user_id']);
+                      initAppData() ;
                       WebToasts.showToastification("Confirmation", "Logged In Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
                       context.go('/chat');
                     } else {
@@ -411,7 +414,9 @@ class _LoginRegisterState extends State<LoginRegister> {
                     setState(() => isLoading = false);
 
                     if (result.containsKey('user_id')) {
-                      initAppData(result['user_id']) ;
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('user_id', result['user_id']);
+                      initAppData() ;
                       WebToasts.showToastification("Confirmation", "Registered Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
                       context.go('/chat');
                     } else {
