@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gomiq/apis/auth_apis.dart';
 import 'package:gomiq/helper_functions/web_toasts.dart';
+import 'package:gomiq/provider/user_provider.dart';
 import 'package:gomiq/theme/colors.dart';
 import 'package:gomiq/widgets/custom_button.dart';
 import 'package:gomiq/widgets/custom_text_feild.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LoginRegister extends StatefulWidget {
   const LoginRegister({super.key});
@@ -36,6 +38,13 @@ class _LoginRegisterState extends State<LoginRegister> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> initAppData(String uid) async {
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    await userProvider.initUser(uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -274,6 +283,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                     setState(() => isLLoading = false);
 
                     if (result.containsKey('user_id')) {
+                      initAppData(result['user_id']) ;
                       WebToasts.showToastification("Confirmation", "Logged In Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
                       context.go('/chat');
                     } else {
@@ -401,6 +411,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                     setState(() => isLoading = false);
 
                     if (result.containsKey('user_id')) {
+                      initAppData(result['user_id']) ;
                       WebToasts.showToastification("Confirmation", "Registered Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
                       context.go('/chat');
                     } else {
