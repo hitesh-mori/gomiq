@@ -4,7 +4,7 @@ import 'package:gomiq/pages/auth_pages/login_register.dart';
 import 'package:gomiq/pages/home_pages/chat_screen.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/chat',
   routes: <RouteBase>[
 
     GoRoute(

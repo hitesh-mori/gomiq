@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:gomiq/apis/chat_api.dart';
 import 'package:gomiq/helper_functions/web_toasts.dart';
 import 'package:gomiq/main.dart';
 import 'package:gomiq/models/chat.dart';
@@ -25,245 +28,31 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Chat? selectedChat;
 
-  final List<Chat> allChats = [
-
-    Chat(
-      title: "Flutter Setup",
-      createdAt: DateTime.now(),
-      chatContent: [
-        ChatContent(
-            toId: '1',
-            fromId: '2',
-            question: "How to install Flutter?",
-            answer:
-            '''
-        
-  ## 🚀 Flutter Setup Guide
-
-  Follow these steps to install **Flutter** on your machine:
-
-  ## 🛠️ Requirements
-
-  - Windows/macOS/Linux
-  - Git
-  - IDE (VS Code / Android Studio)
+  final TextEditingController _promptController = TextEditingController();
 
 
-  ## 📦 Installation Steps
+  List<Chat> allChats  = [] ;
 
-  1. Download the Flutter SDK from [flutter.dev](https://flutter.dev)
-  2. Extract the zip file and add Flutter to your PATH.
-  3. Run: '''
+  bool isSending = false ;
 
-        ),
-        ChatContent(
-          toId: '2',
-          fromId: '1',
-          question: "How to check Flutter version?",
-          answer: "Run:\n```bash\nflutter --version\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Dart Basics",
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is a Dart variable?",
-          answer:
-          "A container for storing data.\n\n| Type | Example |\n|------|---------|\n| int  | 5       |\n| String | 'hello' |",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Async Await",
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      chatContent: [
-        ChatContent(
-            toId: '2',
-            fromId: '1',
-            question: "How does async work in Dart?",
-            answer: '''
-      The reason **hover effect is not working** in your code is because `isHover` is defined **inside the `build` method**, meaning it resets to `false` every time the widget rebuilds — so the `setState` changes have no effect.
-
-### ✅ Fix: Move `isHover` to the class level
-
-Update your code like this:
-
-```dart
-class _ChatItemState extends State<ChatItem> {
-  bool isHover = false; // <--- move it here, outside build()
 
   @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onExit: (_) {
-        setState(() {
-          isHover = false;
-        });
-      },
-      onEnter: (_) {
-        setState(() {
-          isHover = true;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3.0),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: (widget.isSelected || isHover)
-                  ? AppColors.theme['primaryColor']!.withOpacity(0.2)
-                  : AppColors.theme['backgroundColor'],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(widget.title, style: GoogleFonts.poppins()),
-                  if (widget.isSelected)
-                    IconButton(
-                      icon: const Icon(Icons.more_horiz_outlined),
-                      onPressed: () {
-                        // Your action here
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    fetchChats();
   }
-}
-```
 
-### 🔁 Summary:
+  // Fetch chats and update UI
+  Future<void> fetchChats() async {
 
-* `bool isHover` must be a **state variable** so it persists across rebuilds.
-* When defined inside `build()`, it resets to `false` every frame, so you'll never see the hover effect.
+    final fetchedChats = await ChatApi.fetchChatsWithContent("ab9aa5c7-9854-48c1-8686-ee187a5a4f9a");
 
-Let me know if you'd also like to add animated transitions or make it mobile-friendly!
+    setState(() {
+      allChats = fetchedChats ;
+    });
 
+  }
 
-            
-          '''
-        ),
-      ],
-    ),
-    Chat(
-      title: "FutureBuilder",
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\n```dart\nFutureBuilder(\n  future: fetchData(),\n  builder: (context, snapshot) {\n    if (snapshot.connectionState == ConnectionState.waiting) {\n      return CircularProgressIndicator();\n    } else {\n      return Text('Done');\n    }\n  },\n)\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Old Topic",
-      createdAt: DateTime(2024, 4, 24),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\nCheck [docs](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html).",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Async Await",
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      chatContent: [
-        ChatContent(
-          toId: '2',
-          fromId: '1',
-          question: "How does async work in Dart?",
-          answer:
-          "It allows non-blocking operations using `async` and `await`.\n\n```dart\nFuture<void> fetchData() async {\n  await Future.delayed(Duration(seconds: 2));\n}\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "FutureBuilder",
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\n```dart\nFutureBuilder(\n  future: fetchData(),\n  builder: (context, snapshot) {\n    if (snapshot.connectionState == ConnectionState.waiting) {\n      return CircularProgressIndicator();\n    } else {\n      return Text('Done');\n    }\n  },\n)\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Old Topic",
-      createdAt: DateTime(2024, 4, 24),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\nCheck [docs](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html).",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Async Await",
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      chatContent: [
-        ChatContent(
-          toId: '2',
-          fromId: '1',
-          question: "How does async work in Dart?",
-          answer:
-          "It allows non-blocking operations using `async` and `await`.\n\n```dart\nFuture<void> fetchData() async {\n  await Future.delayed(Duration(seconds: 2));\n}\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "FutureBuilder",
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\n```dart\nFutureBuilder(\n  future: fetchData(),\n  builder: (context, snapshot) {\n    if (snapshot.connectionState == ConnectionState.waiting) {\n      return CircularProgressIndicator();\n    } else {\n      return Text('Done');\n    }\n  },\n)\n```",
-        ),
-      ],
-    ),
-    Chat(
-      title: "Old Topic",
-      createdAt: DateTime(2024, 4, 24),
-      chatContent: [
-        ChatContent(
-          toId: '1',
-          fromId: '2',
-          question: "What is FutureBuilder?",
-          answer:
-          "A widget that builds itself based on a Future.\n\nCheck [docs](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html).",
-        ),
-      ],
-    ),
-
-  ];
 
   Map<String, List<Chat>> groupChatsByDate(List<Chat> chats) {
     final Map<String, List<Chat>> grouped = {};
@@ -292,6 +81,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
 
     return grouped;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -335,29 +125,51 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                            ),
                          ),
 
-                         Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.theme['backgroundColor'],
-                            borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                offset: Offset(0, 1),
-                                blurRadius: 5,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                           child: Padding(
-                             padding: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 5),
-                             child: Row(
-                               children: [
-                                 Icon(Icons.add,),
-                                 Text("ADD",style: GoogleFonts.poppins(),),
-                               ],
+                         MouseRegion(
+                           cursor: SystemMouseCursors.click,
+                           child: InkWell(
+                             onTap: () async {
+                               bool success = await ChatApi.createChat(
+                                 userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                 title: 'New Chat Title',
+                               );
+
+                               if (success) {
+                                 // Step 2: Fetch updated chats
+                                 List<Chat> updatedChats = await ChatApi.fetchChatsWithContent('ab9aa5c7-9854-48c1-8686-ee187a5a4f9a');
+
+                                 // Step 3: Update UI
+                                 setState(() {
+                                   allChats.clear();
+                                   allChats.addAll(updatedChats);
+                                   selectedChat = updatedChats.isNotEmpty ? updatedChats.last : null;
+                                 });
+                               }
+                             },
+                             child: Container(
+                               decoration: BoxDecoration(
+                                 color: AppColors.theme['backgroundColor'],
+                                 borderRadius: BorderRadius.circular(5),
+                                 boxShadow: [
+                                   BoxShadow(
+                                     color: Colors.black.withOpacity(0.1),
+                                     offset: Offset(0, 1),
+                                     blurRadius: 5,
+                                     spreadRadius: 1,
+                                   ),
+                                 ],
+                               ),
+                               child: Padding(
+                                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                                 child: Row(
+                                   children: [
+                                     Icon(Icons.add),
+                                     Text("ADD", style: GoogleFonts.poppins()),
+                                   ],
+                                 ),
+                               ),
                              ),
                            ),
-
                          )
 
                        ],
@@ -370,7 +182,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                     ),
                     Expanded(
                       child: ListView(
-                        children: groupedChats.entries.map((entry) {
+                        children: groupedChats.entries.toList().reversed.map((entry) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -383,7 +195,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              ...entry.value.map(
+                              ...entry.value.reversed.map(
                                     (chat) => ChatItem(
                                   title: chat.title,
                                   isSelected: selectedChat == chat,
@@ -408,12 +220,15 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                   SizedBox(height: 20,),
 
                   // Scrollable main content
-                  Expanded(
+                   Expanded(
                     child: SingleChildScrollView(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: selectedChat != null
-                            ? Column(
+                            ? selectedChat!.chatContent.isEmpty ? Padding(
+                          padding:  EdgeInsets.symmetric(vertical: mq.height*0.3),
+                          child: Text("Start Conversion",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 25),),
+                        ) : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Text(
@@ -430,7 +245,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                             //   ),
                             // ),
                             const SizedBox(height: 20),
-                            ...selectedChat!.chatContent.map(
+                            ...selectedChat!.chatContent.toList().reversed.map(
                                   (content) => Padding(
                                 padding:
                                 const EdgeInsets.symmetric(vertical: 8.0),
@@ -453,14 +268,16 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                                             child: Icon(Icons.person, size: 20,color:AppColors.theme['tertiaryColor'],),
                                           ),
                                           SizedBox(width: 10),
-                                          Text(
-                                            '${content.question}',
-                                            style: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 16,
+                                          Expanded(
+                                            child: Text(
+                                              '${content.query}',
+                                              style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                              ),
+                                              softWrap: true,
+                                              overflow: TextOverflow.visible,
                                             ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.visible,
                                           ),
                                         ],
                                       ),
@@ -469,7 +286,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                                     SizedBox(height: 30,),
 
                                     MarkdownBody(
-                                      data: content.answer,
+                                      data: content.response,
                                       styleSheet:
                                       MarkdownStyleSheet.fromTheme(
                                           Theme.of(context)).copyWith(
@@ -546,6 +363,7 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
                                             AppColors.theme['primaryColor'].withOpacity(0.3))),
                                     child: TextFormField(
                                       maxLines: null,
+                                      controller: _promptController,
                                       decoration: InputDecoration(
                                         hintText: 'Enter your query here...',
                                         border: InputBorder.none,
@@ -576,14 +394,73 @@ Let me know if you'd also like to add animated transitions or make it mobile-fri
 
                             CircleAvatar(
                               backgroundColor: AppColors.theme['primaryColor'],
-                                child: Center(child: Icon(Icons.send,color: Colors.white,)),
+                              child:isSending ? Container(height:20,width :20,child: CircularProgressIndicator(color: Colors.white,)) :IconButton(
+                                icon: Icon(Icons.send, color: Colors.white),
+                                onPressed: () async {
+
+                                  final prompt = _promptController.text.trim();
+                                  if (prompt.isEmpty || selectedChat == null) return;
+
+                                  setState(() {
+                                    isSending = true;
+                                  });
+
+                                  final success = await ChatApi.sendPrompt(
+                                    prompt: prompt,
+                                    userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                    chatId: selectedChat!.chatId,
+                                  );
+
+                                  setState(() {
+                                    isSending = false;
+                                  });
+
+                                  if (success) {
+                                    _promptController.clear();
+
+                                    final contentUrl = Uri.parse(
+                                      'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
+                                          '?chat_id=${selectedChat!.chatId}&user_id=ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                    );
+
+                                    final response = await http.get(contentUrl);
+                                    if (response.statusCode == 200) {
+                                      final body = response.body;
+                                      final decoded = jsonDecode(body);
+                                      if (decoded is List) {
+                                        final updatedContent = decoded
+                                            .map<ChatContent>((e) => ChatContent.fromJson(e))
+                                            .toList();
+
+                                        setState(() {
+                                          selectedChat = Chat(
+                                            title: selectedChat!.title,
+                                            chatId: selectedChat!.chatId,
+                                            createdAt: selectedChat!.createdAt,
+                                            chatContent: updatedContent,
+                                          );
+
+                                          // Also update in allChats if needed
+                                          final idx = allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
+                                          if (idx != -1) {
+                                            allChats[idx] = selectedChat!;
+                                          }
+                                        });
+                                      }
+                                    }
+                                  }
+                                },
+                              ),
                             ),
+
                           ],
 
                         ),
                       ),
                     ),
                   )
+
+
                 ],
               ),
             )
@@ -614,7 +491,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
-          // Top Bar with Title and Copy Button
+
           Container(
             height: 50,
             width: double.infinity,
