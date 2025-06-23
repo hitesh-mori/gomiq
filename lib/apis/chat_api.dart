@@ -1,3 +1,4 @@
+import 'package:gomiq/helper_functions/web_toasts.dart';
 import 'package:gomiq/models/chat.dart';
 import 'package:gomiq/models/chat_content.dart';
 import 'package:http/http.dart' as http;
@@ -124,6 +125,35 @@ class ChatApi{
     }
 
     return false;
+  }
+
+  // Delete chat API call
+  static Future<bool> deleteChat({required String userId, required String chatId, required String title,}) async {
+    const String url = 'https://chatbot-task-mfcu.onrender.com/api/delete_chat';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "user_id": userId,
+          "chat_id": chatId,
+          "title": title,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Chat deleted successfully.');
+        return true;
+      } else {
+        print('Failed to delete chat. Status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error occurred while deleting chat: $e');
+      return false;
+    }
   }
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' ;
 import 'package:gomiq/pages/auth_pages/login_register.dart';
+import 'package:gomiq/provider/chat_provider.dart';
 import 'package:gomiq/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +20,8 @@ void main()async{
       MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (context)=>UserProvider()),
+            ChangeNotifierProvider(create: (context)=>ChatProvider()),
+
           ],
           child: MyApp()
       )
