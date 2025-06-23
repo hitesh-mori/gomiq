@@ -245,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         AppColors.theme['tertiaryColor']!.withOpacity(0.1),
                       ),
 
-                      isLoadChats ? Expanded(child: ChatListShimmer()) : Expanded(
+                      groupedChats.entries.toList().isEmpty ? Expanded(child: Container(child: Center(child: Text("Create chat",style: GoogleFonts.poppins(),))))  : isLoadChats ? Expanded(child: ChatListShimmer()) : Expanded(
                         child: ListView(
                           children: groupedChats.entries.toList().reversed.map((entry) {
                             return Column(
@@ -289,6 +289,31 @@ class _ChatScreenState extends State<ChatScreen> {
                                         }
 
                                         await fetchChats() ;
+
+                                        },
+
+                                        onEdit:() async {
+
+                                          final success = await ChatApi.updateChatTitle(
+                                            userId: userProvider.currUserId ?? "",
+                                            chatId: chat.chatId,
+                                            title: chat.title,
+                                          );
+
+                                          if (success) {
+                                            print("Updated successfully");
+
+                                            WebToasts.showToastification("Confirmation", "Chat Title Updated successfully.", Icon(Icons.check_circle,color :Colors.green,), context) ;
+
+                                            setState(() {
+
+                                            });
+
+                                          } else {
+                                            WebToasts.showToastification("Failed", "Something Went wrong.", Icon(Icons.error_outline,color: Colors.red,), context) ;
+                                          }
+
+                                          await fetchChats() ;
 
                                         },
                                   ),
