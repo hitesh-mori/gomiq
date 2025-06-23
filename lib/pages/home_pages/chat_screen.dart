@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:go_router/go_router.dart';
+import 'package:gomiq/provider/chat_provider.dart';
 import 'package:gomiq/provider/user_provider.dart';
+import 'package:gomiq/shimmer_effect/chat_item_shimmer.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,10 +33,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Chat? selectedChat;
 
+
+  bool isLoadChats = false;
+
   final TextEditingController _promptController = TextEditingController();
-
-
-  List<Chat> allChats  = [] ;
 
   bool isSending = false ;
 
@@ -97,12 +99,16 @@ class _ChatScreenState extends State<ChatScreen> {
   // Fetch chats and update UI
   Future<void> fetchChats() async {
 
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    print("hello come") ;
+    setState(() {
+      isLoadChats = true ;
+    });
 
-    final fetchedChats = await ChatApi.fetchChatsWithContent(userProvider.currUserId ?? "");
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    await chatProvider.fetchChatsProvider(context) ;
 
     setState(() {
-      allChats = fetchedChats ;
+      isLoadChats = false;
     });
 
   }
@@ -140,9 +146,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     mq = MediaQuery.of(context).size ;
-    final groupedChats = groupChatsByDate(allChats);
 
-    return Consumer<UserProvider>(builder: (context,userProvider,child){
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    final groupedChats = groupChatsByDate(chatProvider.allChats);
+
+    return Consumer2<UserProvider,ChatProvider>(builder: (context,userProvider,chatProvider,child){
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
@@ -184,20 +193,20 @@ class _ChatScreenState extends State<ChatScreen> {
                               cursor: SystemMouseCursors.click,
                               child: InkWell(
                                 onTap: () async {
+
+                                  WebToasts.showToastification("Waiting...", "We are creating new chat please wait", Icon(Icons.timelapse,color: Colors.green,), context);
+
                                   bool success = await ChatApi.createChat(
-                                    userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                    userId: userProvider.currUserId ?? "",
                                     title: 'New Chat Title',
                                   );
 
-                                  if (success) {
-                                    // Step 2: Fetch updated chats
-                                    List<Chat> updatedChats = await ChatApi.fetchChatsWithContent('ab9aa5c7-9854-48c1-8686-ee187a5a4f9a');
 
-                                    // Step 3: Update UI
+                                  await chatProvider.fetchChatsProvider(context) ;
+
+                                  if (success) {
                                     setState(() {
-                                      allChats.clear();
-                                      allChats.addAll(updatedChats);
-                                      selectedChat = updatedChats.isNotEmpty ? updatedChats.last : null;
+                                      selectedChat = chatProvider.allChats.isNotEmpty ? chatProvider.allChats.last : null;
                                     });
                                   }
                                 },
@@ -236,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         AppColors.theme['tertiaryColor']!.withOpacity(0.1),
                       ),
 
-                      Expanded(
+                      isLoadChats ? Expanded(child: ChatListShimmer()) : Expanded(
                         child: ListView(
                           children: groupedChats.entries.toList().reversed.map((entry) {
                             return Column(
@@ -257,6 +266,31 @@ class _ChatScreenState extends State<ChatScreen> {
                                     isSelected: selectedChat == chat,
                                     onTap: () =>
                                         setState(() => selectedChat = chat),
+                                        chatId: chat.chatId,
+                                        onDelete: () async {
+
+                                        final success = await ChatApi.deleteChat(
+                                          userId: userProvider.currUserId ?? "",
+                                          chatId: chat.chatId,
+                                          title: chat.title,
+                                        );
+
+                                        if (success) {
+                                          print("Deleted successfully");
+
+                                          WebToasts.showToastification("Confirmation", "Chat deleted successfully.", Icon(Icons.check_circle,color :Colors.green,), context) ;
+
+                                          setState(() {
+
+                                          });
+
+                                        } else {
+                                          WebToasts.showToastification("Failed", "Something Went wrong.", Icon(Icons.error_outline,color: Colors.red,), context) ;
+                                        }
+
+                                        await fetchChats() ;
+
+                                        },
                                   ),
                                 ),
                               ],
@@ -519,7 +553,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                         final success = await ChatApi.sendPrompt(
                                           prompt: prompt,
-                                          userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                          userId: userProvider.currUserId ?? "",
                                           chatId: selectedChat!.chatId,
                                         );
 
@@ -532,7 +566,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                           final contentUrl = Uri.parse(
                                             'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
-                                                '?chat_id=${selectedChat!.chatId}&user_id=ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                                '?chat_id=${selectedChat!.chatId}&user_id=${userProvider.currUserId ?? ""}',
                                           );
 
                                           final response = await http.get(contentUrl);
@@ -553,9 +587,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 );
 
                                                 // Also update in allChats if needed
-                                                final idx = allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
+                                                final idx = chatProvider.allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
                                                 if (idx != -1) {
-                                                  allChats[idx] = selectedChat!;
+                                                  chatProvider.allChats[idx] = selectedChat!;
                                                 }
                                               });
                                             }
