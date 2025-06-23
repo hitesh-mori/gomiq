@@ -38,12 +38,54 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool isSending = false ;
 
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollButton = true;
+
+
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScroll);
     initAppData();
     fetchChats();
+
   }
+
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _handleScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+
+    if ((maxScroll - currentScroll) <= 10) {
+      if (_showScrollButton) {
+        setState(() => _showScrollButton = false);
+      }
+    } else {
+      if (!_showScrollButton) {
+        setState(() => _showScrollButton = true);
+      }
+    }
+  }
+
+
 
   Future<void> initAppData() async {
 
@@ -281,6 +323,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     // Scrollable main content
                     Expanded(
                       child: SingleChildScrollView(
+                        controller: _scrollController,
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: selectedChat != null
@@ -389,141 +432,155 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
 
                     // Sticky bottom container
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
-                      child: Container(
-                        height: 100,
-                        width: mq.width * 0.5,
-                        decoration: BoxDecoration(
-                          color: AppColors.theme['backgroundColor'],
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              offset: Offset(0, 1),
-                              blurRadius: 5,
-                              spreadRadius: 1,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
+                          child: Container(
+                            height: 100,
+                            width: mq.width * 0.5,
+                            decoration: BoxDecoration(
+                              color: AppColors.theme['backgroundColor'],
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 5,
+                                  spreadRadius: 1,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
 
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
 
-                                  Container(
-                                    height: 50,
-                                    width: mq.width * 0.4,
-                                    child: Theme(
-                                      data: ThemeData(
-                                          textSelectionTheme: TextSelectionThemeData(
-                                              selectionHandleColor:
-                                              AppColors.theme['primaryColor'],
-                                              cursorColor: AppColors.theme['primaryColor'],
-                                              selectionColor:
-                                              AppColors.theme['primaryColor'].withOpacity(0.3))),
-                                      child: TextFormField(
-                                        maxLines: null,
-                                        controller: _promptController,
-                                        decoration: InputDecoration(
-                                          hintText: 'Enter your query here...',
-                                          border: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                          errorBorder: InputBorder.none,
-                                          disabledBorder: InputBorder.none,
+                                      Container(
+                                        height: 50,
+                                        width: mq.width * 0.4,
+                                        child: Theme(
+                                          data: ThemeData(
+                                              textSelectionTheme: TextSelectionThemeData(
+                                                  selectionHandleColor:
+                                                  AppColors.theme['primaryColor'],
+                                                  cursorColor: AppColors.theme['primaryColor'],
+                                                  selectionColor:
+                                                  AppColors.theme['primaryColor'].withOpacity(0.3))),
+                                          child: TextFormField(
+                                            maxLines: null,
+                                            controller: _promptController,
+                                            decoration: InputDecoration(
+                                              hintText: 'Enter your query here...',
+                                              border: InputBorder.none,
+                                              enabledBorder: InputBorder.none,
+                                              focusedBorder: InputBorder.none,
+                                              errorBorder: InputBorder.none,
+                                              disabledBorder: InputBorder.none,
+                                            ),
+                                          ),
                                         ),
                                       ),
+
+                                      Container(
+                                        height: 40,
+                                        width: 120,
+                                        child: Center(
+                                          child: Text("Attach PDF",style: GoogleFonts.poppins(color: Colors.white,fontSize: 14),),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.theme['primaryColor'],
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+
+                                      )
+
+                                    ],
+                                  ),
+
+                                  CircleAvatar(
+                                    backgroundColor: AppColors.theme['primaryColor'],
+                                    child:isSending ? Container(height:20,width :20,child: CircularProgressIndicator(color: Colors.white,)) :IconButton(
+                                      icon: Icon(Icons.send, color: Colors.white),
+                                      onPressed: () async {
+
+                                        final prompt = _promptController.text.trim();
+                                        if (prompt.isEmpty || selectedChat == null) return;
+
+                                        setState(() {
+                                          isSending = true;
+                                        });
+
+                                        final success = await ChatApi.sendPrompt(
+                                          prompt: prompt,
+                                          userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                          chatId: selectedChat!.chatId,
+                                        );
+
+                                        setState(() {
+                                          isSending = false;
+                                        });
+
+                                        if (success) {
+                                          _promptController.clear();
+
+                                          final contentUrl = Uri.parse(
+                                            'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
+                                                '?chat_id=${selectedChat!.chatId}&user_id=ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
+                                          );
+
+                                          final response = await http.get(contentUrl);
+                                          if (response.statusCode == 200) {
+                                            final body = response.body;
+                                            final decoded = jsonDecode(body);
+                                            if (decoded is List) {
+                                              final updatedContent = decoded
+                                                  .map<ChatContent>((e) => ChatContent.fromJson(e))
+                                                  .toList();
+
+                                              setState(() {
+                                                selectedChat = Chat(
+                                                  title: selectedChat!.title,
+                                                  chatId: selectedChat!.chatId,
+                                                  createdAt: selectedChat!.createdAt,
+                                                  chatContent: updatedContent,
+                                                );
+
+                                                // Also update in allChats if needed
+                                                final idx = allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
+                                                if (idx != -1) {
+                                                  allChats[idx] = selectedChat!;
+                                                }
+                                              });
+                                            }
+                                          }
+                                        }
+                                      },
                                     ),
                                   ),
 
-                                  Container(
-                                    height: 40,
-                                    width: 120,
-                                    child: Center(
-                                      child: Text("Attach PDF",style: GoogleFonts.poppins(color: Colors.white,fontSize: 14),),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.theme['primaryColor'],
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-
-                                  )
-
                                 ],
+
                               ),
-
-                              CircleAvatar(
-                                backgroundColor: AppColors.theme['primaryColor'],
-                                child:isSending ? Container(height:20,width :20,child: CircularProgressIndicator(color: Colors.white,)) :IconButton(
-                                  icon: Icon(Icons.send, color: Colors.white),
-                                  onPressed: () async {
-
-                                    final prompt = _promptController.text.trim();
-                                    if (prompt.isEmpty || selectedChat == null) return;
-
-                                    setState(() {
-                                      isSending = true;
-                                    });
-
-                                    final success = await ChatApi.sendPrompt(
-                                      prompt: prompt,
-                                      userId: 'ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
-                                      chatId: selectedChat!.chatId,
-                                    );
-
-                                    setState(() {
-                                      isSending = false;
-                                    });
-
-                                    if (success) {
-                                      _promptController.clear();
-
-                                      final contentUrl = Uri.parse(
-                                        'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
-                                            '?chat_id=${selectedChat!.chatId}&user_id=ab9aa5c7-9854-48c1-8686-ee187a5a4f9a',
-                                      );
-
-                                      final response = await http.get(contentUrl);
-                                      if (response.statusCode == 200) {
-                                        final body = response.body;
-                                        final decoded = jsonDecode(body);
-                                        if (decoded is List) {
-                                          final updatedContent = decoded
-                                              .map<ChatContent>((e) => ChatContent.fromJson(e))
-                                              .toList();
-
-                                          setState(() {
-                                            selectedChat = Chat(
-                                              title: selectedChat!.title,
-                                              chatId: selectedChat!.chatId,
-                                              createdAt: selectedChat!.createdAt,
-                                              chatContent: updatedContent,
-                                            );
-
-                                            // Also update in allChats if needed
-                                            final idx = allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
-                                            if (idx != -1) {
-                                              allChats[idx] = selectedChat!;
-                                            }
-                                          });
-                                        }
-                                      }
-                                    }
-                                  },
-                                ),
-                              ),
-
-                            ],
-
+                            ),
                           ),
                         ),
-                      ),
+
+
+                        if(selectedChat!= null && _showScrollButton)
+                         Row(
+                          children: [
+                            SizedBox(width: 10,),
+                            MouseRegion(cursor: SystemMouseCursors.click,child: GestureDetector(onTap: _scrollToBottom,child: BouncingArrow())),
+                          ],
+                        )
+                      ],
                     )
 
 
@@ -579,7 +636,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -621,3 +678,47 @@ class CodeElementBuilder extends MarkdownElementBuilder {
   }
 }
 
+class BouncingArrow extends StatefulWidget {
+  const BouncingArrow({super.key});
+
+  @override
+  State<BouncingArrow> createState() => _BouncingArrowState();
+}
+
+class _BouncingArrowState extends State<BouncingArrow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _bounceAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+
+    _bounceAnimation = Tween<Offset>(
+      begin: const Offset(0, 0),
+      end: const Offset(0, 0.2), // Moves down slightly
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _bounceAnimation,
+      child: CircleAvatar(
+        backgroundColor: Colors.blue.withOpacity(0.1),
+        // radius: 25,
+        child: const Icon(Icons.arrow_downward_outlined, color: Colors.black),
+      ),
+    );
+  }
+}
