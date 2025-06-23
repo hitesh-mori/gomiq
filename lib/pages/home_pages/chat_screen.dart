@@ -77,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (difference.inDays == 0 && now.day == created.day) {
         key = 'Today';
-      } else if (difference.inDays == 1 ||
+      } else if (
           (difference.inDays == 0 && now.day != created.day)) {
         key = 'Yesterday';
       } else if (difference.inDays <= 7) {
@@ -353,14 +353,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                           codeblockDecoration: BoxDecoration(
                                             color: Colors.transparent,
                                           ),
+
+                                          code: GoogleFonts.robotoMono(
+                                            fontSize: 13,
+                                            backgroundColor: AppColors.theme['tertiaryColor'].withOpacity(0.1),
+                                            color: AppColors.theme['primaryColor'],
+                                          ),
+
                                           tableHead: GoogleFonts.poppins(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 14),
                                           tableBody: GoogleFonts.poppins(),
-                                          code: GoogleFonts.robotoMono(),
+
                                         ),
                                         builders: {
-                                          'code': CodeElementBuilder(context),
+                                          'pre' :CodeElementBuilder(context),
                                         },
                                       ),
 
@@ -545,7 +552,16 @@ class CodeElementBuilder extends MarkdownElementBuilder {
 
   @override
   Widget visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+
     final code = element.textContent;
+
+    final md.Element? codeElement = element.children?.firstWhere(
+          (child) => child is md.Element && child.tag == 'code',
+    ) as md.Element?;
+
+
+    final language = codeElement?.attributes['class']
+        ?.replaceFirst('language-', '') ?? 'CODE';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -568,7 +584,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Code Snippet",
+                 language[0].toUpperCase() + language.substring(1),
                     style: GoogleFonts.poppins(color: Colors.black,fontWeight: FontWeight.w400),
                   ),
                   IconButton(
@@ -604,3 +620,4 @@ class CodeElementBuilder extends MarkdownElementBuilder {
     );
   }
 }
+

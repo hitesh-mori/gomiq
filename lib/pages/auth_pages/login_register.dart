@@ -293,7 +293,7 @@ class _LoginRegisterState extends State<LoginRegister> {
 
                       WebToasts.showToastification(
                         "Failed",
-                        result['error'] ?? "Login failed",
+                        "Login failed",
                         const Icon(Icons.error_outline, color: Colors.red),
                         context,
                       );
@@ -423,7 +423,7 @@ class _LoginRegisterState extends State<LoginRegister> {
 
                       WebToasts.showToastification(
                         "Failed",
-                        result['error'] ?? "Registration failed",
+                        "Registration failed",
                         const Icon(Icons.error_outline, color: Colors.red),
                         context,
                       );
