@@ -160,7 +160,7 @@ class ChatApi{
   // update
   static Future<bool> updateChatTitle({required String userId, required String chatId, required String title,}) async {
 
-    const String url = 'https://chatbot-task-mfcu.onrender.com/api/update_chat';
+    const String url = 'https://chatbot-task-mfcu.onrender.com/api/title';
 
     try {
       final response = await http.put(

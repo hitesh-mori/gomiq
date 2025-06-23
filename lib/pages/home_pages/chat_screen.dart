@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gomiq/provider/chat_provider.dart';
 import 'package:gomiq/provider/user_provider.dart';
 import 'package:gomiq/shimmer_effect/chat_item_shimmer.dart';
+import 'package:gomiq/widgets/custom_button.dart';
+import 'package:gomiq/widgets/custom_text_feild.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,20 +32,17 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-
   Chat? selectedChat;
-
 
   bool isLoadChats = false;
 
+
   final TextEditingController _promptController = TextEditingController();
 
-  bool isSending = false ;
+  bool isSending = false;
 
   final ScrollController _scrollController = ScrollController();
   bool _showScrollButton = true;
-
-
 
   @override
   void initState() {
@@ -51,9 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController.addListener(_handleScroll);
     initAppData();
     fetchChats();
-
   }
-
 
   @override
   void dispose() {
@@ -87,10 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-
-
   Future<void> initAppData() async {
-
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     await userProvider.initUser();
@@ -98,21 +92,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Fetch chats and update UI
   Future<void> fetchChats() async {
-
-    print("hello come") ;
+    print("hello come");
     setState(() {
-      isLoadChats = true ;
+      isLoadChats = true;
     });
 
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    await chatProvider.fetchChatsProvider(context) ;
+    await chatProvider.fetchChatsProvider(context);
 
     setState(() {
       isLoadChats = false;
     });
-
   }
-
 
   Map<String, List<Chat>> groupChatsByDate(List<Chat> chats) {
     final Map<String, List<Chat>> grouped = {};
@@ -125,8 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (difference.inDays == 0 && now.day == created.day) {
         key = 'Today';
-      } else if (
-          (difference.inDays == 0 && now.day != created.day)) {
+      } else if ((difference.inDays == 0 && now.day != created.day)) {
         key = 'Yesterday';
       } else if (difference.inDays <= 7) {
         key = 'Last 7 Days';
@@ -142,24 +132,22 @@ class _ChatScreenState extends State<ChatScreen> {
     return grouped;
   }
 
-
   @override
   Widget build(BuildContext context) {
-    mq = MediaQuery.of(context).size ;
+    mq = MediaQuery.of(context).size;
 
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
     final groupedChats = groupChatsByDate(chatProvider.allChats);
 
-    return Consumer2<UserProvider,ChatProvider>(builder: (context,userProvider,chatProvider,child){
+    return Consumer2<UserProvider, ChatProvider>(
+        builder: (context, userProvider, chatProvider, child) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           backgroundColor: AppColors.theme['backgroundColor'],
           body: Row(
-
             children: [
-
               // Sidebar
               Container(
                 width: 250,
@@ -171,13 +159,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 child: Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
                   child: Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: Row(
-                          mainAxisAlignment :MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -188,25 +176,33 @@ class _ChatScreenState extends State<ChatScreen> {
                                 fit: BoxFit.cover,
                               ),
                             ),
-
                             MouseRegion(
                               cursor: SystemMouseCursors.click,
                               child: InkWell(
                                 onTap: () async {
-
-                                  WebToasts.showToastification("Waiting...", "We are creating new chat please wait", Icon(Icons.timelapse,color: Colors.green,), context);
+                                  WebToasts.showToastification(
+                                      "Waiting...",
+                                      "We are creating new chat please wait",
+                                      Icon(
+                                        Icons.timelapse,
+                                        color: Colors.green,
+                                      ),
+                                      context);
 
                                   bool success = await ChatApi.createChat(
                                     userId: userProvider.currUserId ?? "",
                                     title: 'New Chat Title',
                                   );
 
-
-                                  await chatProvider.fetchChatsProvider(context) ;
+                                  await chatProvider
+                                      .fetchChatsProvider(context);
 
                                   if (success) {
                                     setState(() {
-                                      selectedChat = chatProvider.allChats.isNotEmpty ? chatProvider.allChats.last : null;
+                                      selectedChat =
+                                          chatProvider.allChats.isNotEmpty
+                                              ? chatProvider.allChats.last
+                                              : null;
                                     });
                                   }
                                 },
@@ -224,150 +220,228 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ],
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 5),
                                     child: Row(
                                       children: [
                                         Icon(Icons.add),
-                                        Text("ADD", style: GoogleFonts.poppins()),
+                                        Text("ADD",
+                                            style: GoogleFonts.poppins()),
                                       ],
                                     ),
                                   ),
                                 ),
                               ),
                             )
-
                           ],
                         ),
                       ),
                       SizedBox(height: 10),
                       Divider(
                         color:
-                        AppColors.theme['tertiaryColor']!.withOpacity(0.1),
+                            AppColors.theme['tertiaryColor']!.withOpacity(0.1),
                       ),
-
-                      groupedChats.entries.toList().isEmpty ? Expanded(child: Container(child: Center(child: Text("Create chat",style: GoogleFonts.poppins(),))))  : isLoadChats ? Expanded(child: ChatListShimmer()) : Expanded(
-                        child: ListView(
-                          children: groupedChats.entries.toList().reversed.map((entry) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    entry.key,
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                ...entry.value.reversed.map(
-                                      (chat) => ChatItem(
-                                    title: chat.title,
-                                    isSelected: selectedChat == chat,
-                                    onTap: () =>
-                                        setState(() => selectedChat = chat),
-                                        chatId: chat.chatId,
-                                        onDelete: () async {
-
-                                        final success = await ChatApi.deleteChat(
-                                          userId: userProvider.currUserId ?? "",
-                                          chatId: chat.chatId,
+                      isLoadChats
+                          ? Expanded(child: ChatListShimmer())
+                          : Expanded(
+                              child: ListView(
+                                children: groupedChats.entries
+                                    .toList()
+                                    .reversed
+                                    .map((entry) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          entry.key,
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      ...entry.value.reversed.map(
+                                        (chat) => ChatItem(
                                           title: chat.title,
-                                        );
+                                          isSelected: selectedChat == chat,
+                                          onTap: () => setState(
+                                              () => selectedChat = chat),
+                                          chatId: chat.chatId,
+                                          onDelete: () async {
+                                            final success =
+                                                await ChatApi.deleteChat(
+                                              userId:
+                                                  userProvider.currUserId ?? "",
+                                              chatId: chat.chatId,
+                                              title: chat.title,
+                                            );
 
-                                        if (success) {
-                                          print("Deleted successfully");
+                                            if (success) {
+                                              print("Deleted successfully");
 
-                                          WebToasts.showToastification("Confirmation", "Chat deleted successfully.", Icon(Icons.check_circle,color :Colors.green,), context) ;
+                                              WebToasts.showToastification(
+                                                  "Confirmation",
+                                                  "Chat deleted successfully.",
+                                                  Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.green,
+                                                  ),
+                                                  context);
 
-                                          setState(() {
+                                              setState(() {});
+                                            } else {
+                                              WebToasts.showToastification(
+                                                  "Failed",
+                                                  "Something Went wrong.",
+                                                  Icon(
+                                                    Icons.error_outline,
+                                                    color: Colors.red,
+                                                  ),
+                                                  context);
+                                            }
 
-                                          });
+                                            await fetchChats();
+                                          },
+                                            onEdit: () async {
+                                              final controller = TextEditingController(text: chat.title);
 
-                                        } else {
-                                          WebToasts.showToastification("Failed", "Something Went wrong.", Icon(Icons.error_outline,color: Colors.red,), context) ;
-                                        }
+                                              bool isLoading = false; // Local dialog loading state
 
-                                        await fetchChats() ;
+                                              await showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return StatefulBuilder(
+                                                    builder: (context, setState) {
+                                                      return AlertDialog(
+                                                        title: Text(
+                                                          "Edit Chat Title",
+                                                          style: GoogleFonts.poppins(
+                                                              fontWeight: FontWeight.bold, fontSize: 16),
+                                                        ),
+                                                        contentPadding: const EdgeInsets.all(20),
+                                                        content: Container(
+                                                          width: 300,
+                                                          height: 100,
+                                                          child: CustomTextFeild(
+                                                            controller: controller,
+                                                            hintText: controller.text,
+                                                            isNumber: false,
+                                                            prefixicon: Icon(Icons.update),
+                                                            obsecuretext: false,
+                                                          ),
+                                                        ),
+                                                        actions: [
+                                                          CustomButton(
+                                                            height: 50,
+                                                            width: 200,
+                                                            loadWidth: 150,
+                                                            isLoading: isLoading,
+                                                            textColor: Colors.white,
+                                                            bgColor: AppColors.theme['primaryColor'],
+                                                            onTap: () async {
+                                                              final newTitle = controller.text.trim();
 
-                                        },
+                                                              if (newTitle.isEmpty || newTitle == chat.title) return;
 
-                                        onEdit:() async {
+                                                              setState(() => isLoading = true); // Local dialog setState
 
-                                          final success = await ChatApi.updateChatTitle(
-                                            userId: userProvider.currUserId ?? "",
-                                            chatId: chat.chatId,
-                                            title: chat.title,
-                                          );
+                                                              final success = await ChatApi.updateChatTitle(
+                                                                userId: userProvider.currUserId ?? "",
+                                                                chatId: chat.chatId,
+                                                                title: newTitle,
+                                                              );
 
-                                          if (success) {
-                                            print("Updated successfully");
+                                                              if (success) {
+                                                                WebToasts.showToastification(
+                                                                  "Confirmation",
+                                                                  "Chat Title Updated successfully.",
+                                                                  Icon(Icons.check_circle, color: Colors.green),
+                                                                  context,
+                                                                );
+                                                              } else {
+                                                                WebToasts.showToastification(
+                                                                  "Failed",
+                                                                  "Something went wrong.",
+                                                                  Icon(Icons.error_outline, color: Colors.red),
+                                                                  context,
+                                                                );
+                                                              }
 
-                                            WebToasts.showToastification("Confirmation", "Chat Title Updated successfully.", Icon(Icons.check_circle,color :Colors.green,), context) ;
-
-                                            setState(() {
-
-                                            });
-
-                                          } else {
-                                            WebToasts.showToastification("Failed", "Something Went wrong.", Icon(Icons.error_outline,color: Colors.red,), context) ;
-                                          }
-
-                                          await fetchChats() ;
-
-                                        },
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-
+                                                              Navigator.pop(context); // close dialog
+                                                              await fetchChats();
+                                                            },
+                                                            title: "Update",
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              );
+                                            }
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                       Divider(
                         color:
-                        AppColors.theme['tertiaryColor']!.withOpacity(0.1),
+                            AppColors.theme['tertiaryColor']!.withOpacity(0.1),
                       ),
-
                       Container(
                         height: 60,
                         decoration: BoxDecoration(
-                          // color: AppColors.the
-                        ),
+                            // color: AppColors.the
+                            ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
                                 CircleAvatar(
                                   child: Center(child: Icon(Icons.person)),
-                                  backgroundColor: AppColors.theme['primaryColor'].withOpacity(0.2),
+                                  backgroundColor: AppColors
+                                      .theme['primaryColor']
+                                      .withOpacity(0.2),
                                 ),
-                                SizedBox(width: 5,),
+                                SizedBox(
+                                  width: 5,
+                                ),
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(userProvider.user?.userName ?? "User Name",style: GoogleFonts.poppins(fontSize: 14,fontWeight: FontWeight.bold),) ,
-                                    Text(userProvider.user?.email ?? "User Email",style: GoogleFonts.poppins(fontSize: 12),),
+                                    Text(
+                                      userProvider.user?.userName ??
+                                          "User Name",
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      userProvider.user?.email ?? "User Email",
+                                      style: GoogleFonts.poppins(fontSize: 12),
+                                    ),
                                   ],
                                 ),
                               ],
                             ),
                             IconButton(
                               icon: Icon(Icons.logout),
-                              onPressed: ()async{
-
+                              onPressed: () async {
                                 context.go('/');
 
-                                await userProvider.logout() ;
-
+                                await userProvider.logout();
                               },
                             )
                           ],
                         ),
-                      ) ,
+                      ),
                     ],
                   ),
                 ),
@@ -376,8 +450,9 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: Column(
                   children: [
-
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
 
                     // Scrollable main content
                     Expanded(
@@ -386,106 +461,159 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: selectedChat != null
-                              ? selectedChat!.chatContent.isEmpty ? Padding(
-                            padding:  EdgeInsets.symmetric(vertical: mq.height*0.3),
-                            child: Text("Start Conversion",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 25),),
-                          ) : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Text(
-                              //   selectedChat!.title,
-                              //   style: GoogleFonts.poppins(
-                              //       fontSize: 22, fontWeight: FontWeight.w600),
-                              // ),
-                              // const SizedBox(height: 10),
-                              // Text(
-                              //   'Created: ${DateFormat('d MMM yyyy, hh:mm a').format(selectedChat!.createdAt)}',
-                              //   style: GoogleFonts.poppins(
-                              //     fontSize: 14,
-                              //     color: Colors.grey,
-                              //   ),
-                              // ),
-                              const SizedBox(height: 20),
-                              ...selectedChat!.chatContent.toList().reversed.map(
-                                    (content) => Padding(
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: AppColors.theme['primaryColor'].withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-
-                                        padding: EdgeInsets.all(8),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: AppColors.theme['primaryColor'].withOpacity(0.2),
-                                              child: Icon(Icons.person, size: 20,color:AppColors.theme['tertiaryColor'],),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Expanded(
-                                              child: Text(
-                                                '${content.query}',
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 16,
+                              ? selectedChat!.chatContent.isEmpty
+                                  ? Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: mq.height * 0.3),
+                                      child: Text(
+                                        "Start Conversion",
+                                        style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 25),
+                                      ),
+                                    )
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Text(
+                                        //   selectedChat!.title,
+                                        //   style: GoogleFonts.poppins(
+                                        //       fontSize: 22, fontWeight: FontWeight.w600),
+                                        // ),
+                                        // const SizedBox(height: 10),
+                                        // Text(
+                                        //   'Created: ${DateFormat('d MMM yyyy, hh:mm a').format(selectedChat!.createdAt)}',
+                                        //   style: GoogleFonts.poppins(
+                                        //     fontSize: 14,
+                                        //     color: Colors.grey,
+                                        //   ),
+                                        // ),
+                                        const SizedBox(height: 20),
+                                        ...selectedChat!.chatContent
+                                            .toList()
+                                            .reversed
+                                            .map(
+                                              (content) => Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.theme[
+                                                                'primaryColor']
+                                                            .withOpacity(0.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(8),
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          CircleAvatar(
+                                                            backgroundColor:
+                                                                AppColors.theme[
+                                                                        'primaryColor']
+                                                                    .withOpacity(
+                                                                        0.2),
+                                                            child: Icon(
+                                                              Icons.person,
+                                                              size: 20,
+                                                              color: AppColors
+                                                                      .theme[
+                                                                  'tertiaryColor'],
+                                                            ),
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Expanded(
+                                                            child: Text(
+                                                              '${content.query}',
+                                                              style: GoogleFonts
+                                                                  .poppins(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: 16,
+                                                              ),
+                                                              softWrap: true,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .visible,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 30,
+                                                    ),
+                                                    MarkdownBody(
+                                                      data: content.response,
+                                                      styleSheet:
+                                                          MarkdownStyleSheet
+                                                                  .fromTheme(
+                                                                      Theme.of(
+                                                                          context))
+                                                              .copyWith(
+                                                        p: GoogleFonts.poppins(
+                                                            fontSize: 14),
+                                                        codeblockDecoration:
+                                                            BoxDecoration(
+                                                          color: Colors
+                                                              .transparent,
+                                                        ),
+                                                        code: GoogleFonts
+                                                            .robotoMono(
+                                                          fontSize: 13,
+                                                          backgroundColor: AppColors
+                                                              .theme[
+                                                                  'tertiaryColor']
+                                                              .withOpacity(0.1),
+                                                          color: AppColors
+                                                                  .theme[
+                                                              'primaryColor'],
+                                                        ),
+                                                        tableHead:
+                                                            GoogleFonts.poppins(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 14),
+                                                        tableBody: GoogleFonts
+                                                            .poppins(),
+                                                      ),
+                                                      builders: {
+                                                        'pre':
+                                                            CodeElementBuilder(
+                                                                context),
+                                                      },
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    const Divider(),
+                                                  ],
                                                 ),
-                                                softWrap: true,
-                                                overflow: TextOverflow.visible,
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      SizedBox(height: 30,),
-
-                                      MarkdownBody(
-                                        data: content.response,
-                                        styleSheet:
-                                        MarkdownStyleSheet.fromTheme(
-                                            Theme.of(context)).copyWith(
-                                          p: GoogleFonts.poppins(fontSize: 14),
-                                          codeblockDecoration: BoxDecoration(
-                                            color: Colors.transparent,
-                                          ),
-
-                                          code: GoogleFonts.robotoMono(
-                                            fontSize: 13,
-                                            backgroundColor: AppColors.theme['tertiaryColor'].withOpacity(0.1),
-                                            color: AppColors.theme['primaryColor'],
-                                          ),
-
-                                          tableHead: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14),
-                                          tableBody: GoogleFonts.poppins(),
-
-                                        ),
-                                        builders: {
-                                          'pre' :CodeElementBuilder(context),
-                                        },
-                                      ),
-
-                                      const SizedBox(height: 10),
-
-                                      const Divider(),
-                                    ],
+                                      ],
+                                    )
+                              : Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: mq.height * 0.3),
+                                  child: Text(
+                                    "Click + to create new chat",
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 25),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
-                              : Padding(
-                            padding:  EdgeInsets.symmetric(vertical: mq.height*0.3),
-                            child: Text("Click + to create new chat",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 25),),
-                          ),
                         ),
                       ),
                     ),
@@ -495,7 +623,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 20),
                           child: Container(
                             height: 100,
                             width: mq.width * 0.5,
@@ -511,32 +640,39 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ),
                               ],
                             ),
-
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-
                                       Container(
                                         height: 50,
                                         width: mq.width * 0.4,
                                         child: Theme(
                                           data: ThemeData(
-                                              textSelectionTheme: TextSelectionThemeData(
-                                                  selectionHandleColor:
-                                                  AppColors.theme['primaryColor'],
-                                                  cursorColor: AppColors.theme['primaryColor'],
-                                                  selectionColor:
-                                                  AppColors.theme['primaryColor'].withOpacity(0.3))),
+                                              textSelectionTheme:
+                                                  TextSelectionThemeData(
+                                                      selectionHandleColor:
+                                                          AppColors.theme[
+                                                              'primaryColor'],
+                                                      cursorColor:
+                                                          AppColors.theme[
+                                                              'primaryColor'],
+                                                      selectionColor: AppColors
+                                                          .theme['primaryColor']
+                                                          .withOpacity(0.3))),
                                           child: TextFormField(
                                             maxLines: null,
                                             controller: _promptController,
                                             decoration: InputDecoration(
-                                              hintText: 'Enter your query here...',
+                                              hintText:
+                                                  'Enter your query here...',
                                               border: InputBorder.none,
                                               enabledBorder: InputBorder.none,
                                               focusedBorder: InputBorder.none,
@@ -546,111 +682,138 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ),
                                         ),
                                       ),
-
                                       Container(
                                         height: 40,
                                         width: 120,
                                         child: Center(
-                                          child: Text("Attach PDF",style: GoogleFonts.poppins(color: Colors.white,fontSize: 14),),
+                                          child: Text(
+                                            "Attach PDF",
+                                            style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontSize: 14),
+                                          ),
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.theme['primaryColor'],
-                                          borderRadius: BorderRadius.circular(8),
+                                          color:
+                                              AppColors.theme['primaryColor'],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
-
                                       )
-
                                     ],
                                   ),
-
                                   CircleAvatar(
-                                    backgroundColor: AppColors.theme['primaryColor'],
-                                    child:isSending ? Container(height:20,width :20,child: CircularProgressIndicator(color: Colors.white,)) :IconButton(
-                                      icon: Icon(Icons.send, color: Colors.white),
-                                      onPressed: () async {
-
-                                        final prompt = _promptController.text.trim();
-                                        if (prompt.isEmpty || selectedChat == null) return;
-
-                                        setState(() {
-                                          isSending = true;
-                                        });
-
-                                        final success = await ChatApi.sendPrompt(
-                                          prompt: prompt,
-                                          userId: userProvider.currUserId ?? "",
-                                          chatId: selectedChat!.chatId,
-                                        );
-
-                                        setState(() {
-                                          isSending = false;
-                                        });
-
-                                        if (success) {
-                                          _promptController.clear();
-
-                                          final contentUrl = Uri.parse(
-                                            'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
-                                                '?chat_id=${selectedChat!.chatId}&user_id=${userProvider.currUserId ?? ""}',
-                                          );
-
-                                          final response = await http.get(contentUrl);
-                                          if (response.statusCode == 200) {
-                                            final body = response.body;
-                                            final decoded = jsonDecode(body);
-                                            if (decoded is List) {
-                                              final updatedContent = decoded
-                                                  .map<ChatContent>((e) => ChatContent.fromJson(e))
-                                                  .toList();
+                                    backgroundColor:
+                                        AppColors.theme['primaryColor'],
+                                    child: isSending
+                                        ? Container(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ))
+                                        : IconButton(
+                                            icon: Icon(Icons.send,
+                                                color: Colors.white),
+                                            onPressed: () async {
+                                              final prompt =
+                                                  _promptController.text.trim();
+                                              if (prompt.isEmpty ||
+                                                  selectedChat == null) return;
 
                                               setState(() {
-                                                selectedChat = Chat(
-                                                  title: selectedChat!.title,
-                                                  chatId: selectedChat!.chatId,
-                                                  createdAt: selectedChat!.createdAt,
-                                                  chatContent: updatedContent,
+                                                isSending = true;
+                                              });
+
+                                              final success =
+                                                  await ChatApi.sendPrompt(
+                                                prompt: prompt,
+                                                userId:
+                                                    userProvider.currUserId ??
+                                                        "",
+                                                chatId: selectedChat!.chatId,
+                                              );
+
+                                              setState(() {
+                                                isSending = false;
+                                              });
+
+                                              if (success) {
+                                                _promptController.clear();
+
+                                                final contentUrl = Uri.parse(
+                                                  'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
+                                                  '?chat_id=${selectedChat!.chatId}&user_id=${userProvider.currUserId ?? ""}',
                                                 );
 
-                                                // Also update in allChats if needed
-                                                final idx = chatProvider.allChats.indexWhere((c) => c.chatId == selectedChat!.chatId);
-                                                if (idx != -1) {
-                                                  chatProvider.allChats[idx] = selectedChat!;
+                                                final response =
+                                                    await http.get(contentUrl);
+                                                if (response.statusCode ==
+                                                    200) {
+                                                  final body = response.body;
+                                                  final decoded =
+                                                      jsonDecode(body);
+                                                  if (decoded is List) {
+                                                    final updatedContent = decoded
+                                                        .map<ChatContent>((e) =>
+                                                            ChatContent
+                                                                .fromJson(e))
+                                                        .toList();
+
+                                                    setState(() {
+                                                      selectedChat = Chat(
+                                                        title:
+                                                            selectedChat!.title,
+                                                        chatId: selectedChat!
+                                                            .chatId,
+                                                        createdAt: selectedChat!
+                                                            .createdAt,
+                                                        chatContent:
+                                                            updatedContent,
+                                                      );
+
+                                                      // Also update in allChats if needed
+                                                      final idx = chatProvider
+                                                          .allChats
+                                                          .indexWhere((c) =>
+                                                              c.chatId ==
+                                                              selectedChat!
+                                                                  .chatId);
+                                                      if (idx != -1) {
+                                                        chatProvider
+                                                                .allChats[idx] =
+                                                            selectedChat!;
+                                                      }
+                                                    });
+                                                  }
                                                 }
-                                              });
-                                            }
-                                          }
-                                        }
-                                      },
-                                    ),
+                                              }
+                                            },
+                                          ),
                                   ),
-
                                 ],
-
                               ),
                             ),
                           ),
                         ),
-
-
-                        if(selectedChat!= null && _showScrollButton)
-                         Row(
-                          children: [
-                            SizedBox(width: 10,),
-                            MouseRegion(cursor: SystemMouseCursors.click,child: GestureDetector(onTap: _scrollToBottom,child: BouncingArrow())),
-                          ],
-                        )
+                        if (selectedChat != null && _showScrollButton)
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 10,
+                              ),
+                              MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                      onTap: _scrollToBottom,
+                                      child: BouncingArrow())),
+                            ],
+                          )
                       ],
                     )
-
-
                   ],
                 ),
               )
-
-
-
-
-
             ],
           ),
         ),
@@ -659,31 +822,27 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-
 class CodeElementBuilder extends MarkdownElementBuilder {
-
   final BuildContext context;
 
   CodeElementBuilder(this.context);
 
   @override
   Widget visitElementAfter(md.Element element, TextStyle? preferredStyle) {
-
     final code = element.textContent;
 
     final md.Element? codeElement = element.children?.firstWhere(
-          (child) => child is md.Element && child.tag == 'code',
+      (child) => child is md.Element && child.tag == 'code',
     ) as md.Element?;
 
-
-    final language = codeElement?.attributes['class']
-        ?.replaceFirst('language-', '') ?? 'CODE';
+    final language =
+        codeElement?.attributes['class']?.replaceFirst('language-', '') ??
+            'CODE';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
-
           Container(
             height: 50,
             width: double.infinity,
@@ -700,14 +859,20 @@ class CodeElementBuilder extends MarkdownElementBuilder {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                 language[0].toUpperCase() + language.substring(1),
-                    style: GoogleFonts.poppins(color: Colors.black,fontWeight: FontWeight.w400),
+                    language[0].toUpperCase() + language.substring(1),
+                    style: GoogleFonts.poppins(
+                        color: Colors.black, fontWeight: FontWeight.w400),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.copy, color: Colors.black,size: 20,),
+                    icon: const Icon(
+                      Icons.copy,
+                      color: Colors.black,
+                      size: 20,
+                    ),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: code));
-                      WebToasts.showToastification("Code Copy", "Copied", Icon(Icons.copy),context) ;
+                      WebToasts.showToastification(
+                          "Code Copy", "Copied", Icon(Icons.copy), context);
                     },
                   ),
                 ],
