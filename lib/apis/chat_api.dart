@@ -157,5 +157,34 @@ class ChatApi{
   }
 
 
+  // update
+  static Future<bool> updateChatTitle({required String userId, required String chatId, required String title,}) async {
+
+    const String url = 'https://chatbot-task-mfcu.onrender.com/api/update_chat';
+
+    try {
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "user_id": userId,
+          "chat_id": chatId,
+          "title": title,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Chat title updated successfully");
+        return true;
+      } else {
+        print("Failed to update chat title: ${response.statusCode}");
+        print("Response: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error updating chat title: $e");
+      return false;
+    }
+  }
 
 }

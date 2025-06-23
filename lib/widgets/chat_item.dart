@@ -13,14 +13,16 @@ class ChatItem extends StatefulWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final String chatId ;
-  final Function()? onDelete;
+  final Function() onDelete;
+  final Function() onEdit;
+
 
 
   const ChatItem({
     super.key,
     required this.title,
     required this.isSelected,
-    required this.onTap, required this.chatId,required this.onDelete,
+    required this.onTap, required this.chatId,required this.onDelete, required this.onEdit,
   });
 
   @override
@@ -81,9 +83,7 @@ class _ChatItemState extends State<ChatItem> {
                               MouseRegion(
                                 cursor: SystemMouseCursors.click,
                                 child: InkWell(
-                                  onTap: (){
-
-                                  },
+                                  onTap:widget.onEdit,
                                   child: Container(
                                     width: 100,
                                     child: Center(child: Padding(
