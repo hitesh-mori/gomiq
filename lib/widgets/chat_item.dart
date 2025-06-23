@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gomiq/theme/colors.dart';
 
@@ -21,6 +22,8 @@ class ChatItem extends StatefulWidget {
 class _ChatItemState extends State<ChatItem> {
 
   bool isHover = false ;
+  bool isHover2  = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -61,13 +64,67 @@ class _ChatItemState extends State<ChatItem> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(widget.title, style: GoogleFonts.poppins()),
-                    if(isHover)
-                    IconButton(
-                      icon: const Icon(Icons.more_horiz_outlined),
-                      onPressed: () {
+                  if(isHover)
+                  CustomPopup(
+                      barrierColor: Colors.transparent,
+                      backgroundColor: AppColors.theme['backgroundColor'],
+                      contentPadding: EdgeInsets.symmetric(horizontal: 2),
+                      content: Container(
+                        height: 102,
+                        width: 120,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 10,),
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: InkWell(
+                                onTap: (){
 
-                      },
-                    ),
+                                },
+                                child: Container(
+                                  width: 100,
+                                  child: Center(child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("Update"),
+                                  )),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: AppColors.theme['primaryColor'].withOpacity(0.1),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10,),
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: InkWell(
+                                onTap: (){
+
+                                },
+                                child: Container(
+                                  width: 100,
+                                  child: Center(child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("Delete"),
+                                  )),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: AppColors.theme['primaryColor'].withOpacity(0.1),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10,),
+
+                          ],
+                        ),
+                      ),
+                      child:  MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Icon(Icons.more_horiz_outlined),
+                      ),
+                  )
                 ],
               ),
             ),
