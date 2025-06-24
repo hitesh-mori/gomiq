@@ -194,6 +194,44 @@ class _LoginRegisterState extends State<LoginRegister> {
     );
   }
 
+  Future<void> handleLogin()async{
+
+
+
+    final email = _emailLController.text.trim();
+    final password = _passwordLController.text.trim();
+
+
+    if(email=="" || password==""){
+      WebToasts.showToastification("Warning", "Don't leave any field, fill all the given field to register", Icon(Icons.warning,color: Colors.yellow,), context);
+      return ;
+    }
+
+    setState(() => isLLoading = true);
+
+
+    final result = await AuthApis.signIn(email, password);
+
+    setState(() => isLLoading = false);
+
+    if (result.containsKey('user_id')) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', result['user_id']);
+      initAppData() ;
+      WebToasts.showToastification("Confirmation", "Logged In Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
+      context.go('/chat');
+    } else {
+
+      WebToasts.showToastification(
+        "Failed",
+        "Login failed",
+        const Icon(Icons.error_outline, color: Colors.red),
+        context,
+      );
+
+    }
+  }
+
   // Login form
   Widget _buildLoginForm() {
     return Row(
@@ -243,6 +281,8 @@ class _LoginRegisterState extends State<LoginRegister> {
                   isNumber: false,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
+                  onFieldSubmitted: (_) => handleLogin(),
+                  textInputAction: TextInputAction.done,
                 ),
                 CustomTextFeild(
                   controller: _passwordLController,
@@ -261,6 +301,8 @@ class _LoginRegisterState extends State<LoginRegister> {
                       });
                     },
                   ),
+                  onFieldSubmitted: (_) => handleLogin(),
+                  textInputAction: TextInputAction.done,
                 ),
                 SizedBox(
                   height: 20,
@@ -272,35 +314,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                   width: 300,
                   textColor: Colors.white,
                   bgColor: AppColors.theme['primaryColor'],
-                  onTap: () async {
-
-                    setState(() => isLLoading = true);
-
-                    final email = _emailLController.text.trim();
-                    final password = _passwordLController.text.trim();
-
-                    final result = await AuthApis.signIn(email, password);
-
-                    setState(() => isLLoading = false);
-
-                    if (result.containsKey('user_id')) {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('user_id', result['user_id']);
-                      initAppData() ;
-                      WebToasts.showToastification("Confirmation", "Logged In Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
-                      context.go('/chat');
-                    } else {
-
-                      WebToasts.showToastification(
-                        "Failed",
-                        "Login failed",
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        context,
-                      );
-
-                    }
-                  },
-
+                  onTap:handleLogin,
                   title: 'Login',
                 ),
 
@@ -313,6 +327,42 @@ class _LoginRegisterState extends State<LoginRegister> {
         ),
       ],
     );
+  }
+
+  Future<void> handleRegister()async{
+
+    setState(() => isLoading = true);
+
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if(username=="" || email=="" || password==""){
+      WebToasts.showToastification("Warning", "Don't leave any field, fill all the given field to register", Icon(Icons.warning,color: Colors.yellow,), context);
+      setState(() => isLoading = false);
+      return ;
+    }
+
+    final result = await AuthApis.signUp(username, email, password);
+
+    setState(() => isLoading = false);
+
+    if (result.containsKey('user_id')) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', result['user_id']);
+      initAppData() ;
+      WebToasts.showToastification("Confirmation", "Registered Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
+      context.go('/chat');
+    } else {
+
+      WebToasts.showToastification(
+        "Failed",
+        "Registration failed",
+        const Icon(Icons.error_outline, color: Colors.red),
+        context,
+      );
+
+    }
   }
 
   // Register form
@@ -365,6 +415,8 @@ class _LoginRegisterState extends State<LoginRegister> {
                   controller: _usernameController,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
+                  onFieldSubmitted: (_) => handleRegister(),
+                  textInputAction: TextInputAction.done,
                 ),
                 CustomTextFeild(
                   hintText: 'Enter email',
@@ -372,6 +424,8 @@ class _LoginRegisterState extends State<LoginRegister> {
                   controller: _emailController,
                   prefixicon: Icon(Icons.email_outlined),
                   obsecuretext: false,
+                  onFieldSubmitted: (_) => handleRegister(),
+                  textInputAction: TextInputAction.done,
                 ),
                 CustomTextFeild(
                   hintText: 'Enter password',
@@ -390,6 +444,8 @@ class _LoginRegisterState extends State<LoginRegister> {
                       });
                     },
                   ),
+                  onFieldSubmitted: (_) => handleRegister(),
+                  textInputAction: TextInputAction.done,
                 ),
                 SizedBox(
                   height: 20,
@@ -401,36 +457,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                   width: 300,
                   textColor: Colors.white,
                   bgColor: AppColors.theme['primaryColor'],
-                  onTap: () async {
-
-                    setState(() => isLoading = true);
-
-                    final username = _usernameController.text.trim();
-                    final email = _emailController.text.trim();
-                    final password = _passwordController.text.trim();
-
-                    final result = await AuthApis.signUp(username, email, password);
-
-                    setState(() => isLoading = false);
-
-                    if (result.containsKey('user_id')) {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('user_id', result['user_id']);
-                      initAppData() ;
-                      WebToasts.showToastification("Confirmation", "Registered Successfully!", Icon(Icons.check_circle,color: Colors.green,), context);
-                      context.go('/chat');
-                    } else {
-
-                      WebToasts.showToastification(
-                        "Failed",
-                        "Registration failed",
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        context,
-                      );
-
-                    }
-                  },
-
+                  onTap: handleRegister,
                   title: 'Register',
                 ),
                 SizedBox(

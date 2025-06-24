@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:gomiq/theme/colors.dart';
-
 class CustomTextFeild extends StatelessWidget {
   final String hintText;
   final bool enabled;
@@ -14,6 +13,9 @@ class CustomTextFeild extends StatelessWidget {
   final IconButton? suffix;
   final void Function(String?)? onSaved;
   final void Function(String?)? onChange;
+
+  final void Function(String)? onFieldSubmitted;
+  final TextInputAction? textInputAction;
 
   const CustomTextFeild({
     Key? key,
@@ -28,6 +30,8 @@ class CustomTextFeild extends StatelessWidget {
     required this.obsecuretext,
     this.suffix,
     this.onChange,
+    this.onFieldSubmitted,
+    this.textInputAction,
   }) : super(key: key);
 
   @override
@@ -36,55 +40,58 @@ class CustomTextFeild extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Center(
-          child: Theme(
-            data: ThemeData(
-                textSelectionTheme: TextSelectionThemeData(
-                    selectionHandleColor:
-                    AppColors.theme['primaryColor'],
-                    cursorColor: AppColors.theme['primaryColor'],
-                    selectionColor:
-                    AppColors.theme['primaryColor'].withOpacity(0.3))),
-            child: TextFormField(
-              enabled: enabled,
+        child: Theme(
+          data: ThemeData(
+            textSelectionTheme: TextSelectionThemeData(
+              selectionHandleColor: AppColors.theme['primaryColor'],
               cursorColor: AppColors.theme['primaryColor'],
-              onSaved: onSaved,
-              onChanged: onChange,
-              obscureText: obsecuretext,
-              initialValue: initialText,
-              keyboardType:
-              isNumber ? TextInputType.number : TextInputType.emailAddress,
-              controller: controller,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.theme['primaryColor'].withOpacity(0.1),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.theme['backgroundColor']),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.theme['backgroundColor']),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.red),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.theme['backgroundColor']!),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                hintText: hintText,
-                hintStyle: TextStyle(
-                    color: AppColors.theme['tertiaryColor'].withOpacity(0.5)),
-                prefixIcon: prefixicon,
-                prefixIconColor: AppColors.theme['primaryColor'],
-                suffixIcon: suffix,
-                suffixIconColor: AppColors.theme['primaryColor'],
-              ),
-              validator: validator,
+              selectionColor: AppColors.theme['primaryColor']!.withOpacity(0.3),
             ),
-          )),
+          ),
+          child: TextFormField(
+            enabled: enabled,
+            cursorColor: AppColors.theme['primaryColor'],
+            onSaved: onSaved,
+            onChanged: onChange,
+            onFieldSubmitted: onFieldSubmitted,
+            textInputAction: textInputAction ?? TextInputAction.done,
+            obscureText: obsecuretext,
+            initialValue: initialText,
+            keyboardType: isNumber ? TextInputType.number : TextInputType.emailAddress,
+            controller: controller,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.theme['primaryColor']!.withOpacity(0.1),
+              contentPadding: EdgeInsets.symmetric(horizontal: 20),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.theme['backgroundColor']!),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.theme['backgroundColor']!),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.theme['backgroundColor']!),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: AppColors.theme['tertiaryColor']!.withOpacity(0.5),
+              ),
+              prefixIcon: prefixicon,
+              prefixIconColor: AppColors.theme['primaryColor'],
+              suffixIcon: suffix,
+              suffixIconColor: AppColors.theme['primaryColor'],
+            ),
+            validator: validator,
+          ),
+        ),
+      ),
     );
   }
 }
