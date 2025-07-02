@@ -679,6 +679,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                               errorBorder: InputBorder.none,
                                               disabledBorder: InputBorder.none,
                                             ),
+                                            onFieldSubmitted: (_) => handleSendButton(),
+                                            textInputAction: TextInputAction.done,
                                           ),
                                         ),
                                       ),
@@ -715,80 +717,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         : IconButton(
                                             icon: Icon(Icons.send,
                                                 color: Colors.white),
-                                            onPressed: () async {
-                                              final prompt =
-                                                  _promptController.text.trim();
-                                              if (prompt.isEmpty ||
-                                                  selectedChat == null) return;
-
-                                              setState(() {
-                                                isSending = true;
-                                              });
-
-                                              final success =
-                                                  await ChatApi.sendPrompt(
-                                                prompt: prompt,
-                                                userId:
-                                                    userProvider.currUserId ??
-                                                        "",
-                                                chatId: selectedChat!.chatId,
-                                              );
-
-                                              setState(() {
-                                                isSending = false;
-                                              });
-
-                                              if (success) {
-                                                _promptController.clear();
-
-                                                final contentUrl = Uri.parse(
-                                                  'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
-                                                  '?chat_id=${selectedChat!.chatId}&user_id=${userProvider.currUserId ?? ""}',
-                                                );
-
-                                                final response =
-                                                    await http.get(contentUrl);
-                                                if (response.statusCode ==
-                                                    200) {
-                                                  final body = response.body;
-                                                  final decoded =
-                                                      jsonDecode(body);
-                                                  if (decoded is List) {
-                                                    final updatedContent = decoded
-                                                        .map<ChatContent>((e) =>
-                                                            ChatContent
-                                                                .fromJson(e))
-                                                        .toList();
-
-                                                    setState(() {
-                                                      selectedChat = Chat(
-                                                        title:
-                                                            selectedChat!.title,
-                                                        chatId: selectedChat!
-                                                            .chatId,
-                                                        createdAt: selectedChat!
-                                                            .createdAt,
-                                                        chatContent:
-                                                            updatedContent,
-                                                      );
-
-                                                      // Also update in allChats if needed
-                                                      final idx = chatProvider
-                                                          .allChats
-                                                          .indexWhere((c) =>
-                                                              c.chatId ==
-                                                              selectedChat!
-                                                                  .chatId);
-                                                      if (idx != -1) {
-                                                        chatProvider
-                                                                .allChats[idx] =
-                                                            selectedChat!;
-                                                      }
-                                                    });
-                                                  }
-                                                }
-                                              }
-                                            },
+                                            onPressed: handleSendButton,
                                           ),
                                   ),
                                 ],
@@ -819,6 +748,89 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     });
+  }
+  Future<void> handleSendButton()async{
+
+    final prompt = _promptController.text.trim();
+
+    if(prompt=="" || selectedChat == null){
+      WebToasts.showToastification("Warning", "Don't leave prompt field empty, fill the given field to send prompt", Icon(Icons.warning,color: Colors.yellow,), context);
+      return ;
+    }
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+
+    setState(() {
+      isSending = true;
+    });
+
+    final success =
+    await ChatApi.sendPrompt(
+      prompt: prompt,
+      userId:
+      userProvider.currUserId ??
+          "",
+      chatId: selectedChat!.chatId,
+    );
+
+    setState(() {
+      isSending = false;
+    });
+
+    if (success) {
+      _promptController.clear();
+
+      final contentUrl = Uri.parse(
+        'https://chatbot-task-mfcu.onrender.com/api/get_conversation'
+            '?chat_id=${selectedChat!.chatId}&user_id=${userProvider.currUserId ?? ""}',
+      );
+
+      final response =
+      await http.get(contentUrl);
+      if (response.statusCode ==
+          200) {
+        final body = response.body;
+        final decoded =
+        jsonDecode(body);
+        if (decoded is List) {
+          final updatedContent = decoded
+              .map<ChatContent>((e) =>
+              ChatContent
+                  .fromJson(e))
+              .toList();
+
+          setState(() {
+            selectedChat = Chat(
+              title:
+              selectedChat!.title,
+              chatId: selectedChat!
+                  .chatId,
+              createdAt: selectedChat!
+                  .createdAt,
+              chatContent:
+              updatedContent,
+            );
+
+            // Also update in allChats if needed
+            final idx = chatProvider
+                .allChats
+                .indexWhere((c) =>
+            c.chatId ==
+                selectedChat!
+                    .chatId);
+            if (idx != -1) {
+              chatProvider
+                  .allChats[idx] =
+              selectedChat!;
+            }
+          });
+        }
+      }
+    }
+
   }
 }
 
@@ -900,6 +912,9 @@ class CodeElementBuilder extends MarkdownElementBuilder {
       ),
     );
   }
+
+
+
 }
 
 class BouncingArrow extends StatefulWidget {
