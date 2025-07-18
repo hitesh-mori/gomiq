@@ -1,16 +1,20 @@
-# gomiq
+# GOMIQ
 
-A new Flutter project.
+Screenshots : 
 
-## Getting Started
+1).Authentication
 
-This project is a starting point for a Flutter application.
+ i. Login
 
-A few resources to get you started if this is your first Flutter project:
+<img width="1915" height="867" alt="image" src="https://github.com/user-attachments/assets/8de8b9fc-ca6d-424f-aaaf-d1ff5f89db66" />
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+ ii).Register
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img width="1919" height="887" alt="image" src="https://github.com/user-attachments/assets/373b1574-1697-462a-b2ec-8090a9253ab0" />
+ 
+
+2).Chat Screen
+
+<img width="1919" height="889" alt="image" src="https://github.com/user-attachments/assets/36678c08-cd5a-4a49-a546-c2d8567951e7" />
+
+<img width="1917" height="876" alt="image" src="https://github.com/user-attachments/assets/2a72ba3a-6a01-4aa7-87c4-a3753f756d5e" />
