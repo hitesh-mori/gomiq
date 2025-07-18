@@ -4,7 +4,7 @@ Screenshots :
 
 1).Authentication
 
- i. Login
+ i). Login
 
 <img width="1915" height="867" alt="image" src="https://github.com/user-attachments/assets/8de8b9fc-ca6d-424f-aaaf-d1ff5f89db66" />
 
