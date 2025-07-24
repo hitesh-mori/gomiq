@@ -20,6 +20,7 @@ import 'package:gomiq/theme/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatScreen extends StatefulWidget {
   static const route = "/chat";
@@ -534,67 +535,63 @@ class _ChatScreenState extends State<ChatScreen> {
                                                           ),
                                                           SizedBox(width: 10),
                                                           Expanded(
-                                                            child: Text(
+                                                            child: SelectableText(
                                                               '${content.query}',
-                                                              style: GoogleFonts
-                                                                  .poppins(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
+                                                              style: GoogleFonts.poppins(
+                                                                fontWeight: FontWeight.w600,
                                                                 fontSize: 16,
                                                               ),
-                                                              softWrap: true,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .visible,
+                                                              // optional
+                                                              showCursor: true,
+                                                              cursorWidth: 2,
+                                                              cursorColor: Colors.blue,
                                                             ),
                                                           ),
+
                                                         ],
                                                       ),
                                                     ),
                                                     SizedBox(
                                                       height: 30,
                                                     ),
-                                                    MarkdownBody(
-                                                      data: content.response,
-                                                      styleSheet:
-                                                          MarkdownStyleSheet
-                                                                  .fromTheme(
-                                                                      Theme.of(
-                                                                          context))
-                                                              .copyWith(
-                                                        p: GoogleFonts.poppins(
-                                                            fontSize: 14),
-                                                        codeblockDecoration:
-                                                            BoxDecoration(
-                                                          color: Colors
-                                                              .transparent,
+                                                    Column(
+                                                      children: [
+                                                        MarkdownBody(
+                                                          data: content.response,
+                                                          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                                                            p: GoogleFonts.poppins(fontSize: 14),
+                                                            codeblockDecoration: BoxDecoration(color: Colors.transparent),
+                                                            code: GoogleFonts.robotoMono(
+                                                              fontSize: 13,
+                                                              backgroundColor: AppColors.theme['tertiaryColor']!.withOpacity(0.1),
+                                                              color: AppColors.theme['primaryColor'],
+                                                            ),
+                                                            tableHead: GoogleFonts.poppins(
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 14,
+                                                            ),
+                                                            tableBody: GoogleFonts.poppins(),
+                                                          ),
+                                                          builders: {
+                                                            'pre': CodeElementBuilder(context),
+                                                          },
+                                                          onTapLink: (text, href, title) async {
+
+                                                            final url = Uri.tryParse(href ?? title ?? text ?? "https://hitesh-mori.web.app");
+
+                                                            await launchUrl(url!, mode: LaunchMode.platformDefault);
+
+
+
+                                                          },
                                                         ),
-                                                        code: GoogleFonts
-                                                            .robotoMono(
-                                                          fontSize: 13,
-                                                          backgroundColor: AppColors
-                                                              .theme[
-                                                                  'tertiaryColor']
-                                                              .withOpacity(0.1),
-                                                          color: AppColors
-                                                                  .theme[
-                                                              'primaryColor'],
+                                                        SizedBox(
+                                                          height: 30,
                                                         ),
-                                                        tableHead:
-                                                            GoogleFonts.poppins(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 14),
-                                                        tableBody: GoogleFonts
-                                                            .poppins(),
-                                                      ),
-                                                      builders: {
-                                                        'pre':
-                                                            CodeElementBuilder(
-                                                                context),
-                                                      },
+                                                        CopyFeedbackCard(
+                                                          textToCopy: "Here goes the text of your response",
+                                                        ),
+                                                      ],
                                                     ),
                                                     const SizedBox(height: 10),
                                                     const Divider(),
@@ -684,22 +681,30 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ),
                                         ),
                                       ),
-                                      Container(
-                                        height: 40,
-                                        width: 120,
-                                        child: Center(
-                                          child: Text(
-                                            "Attach PDF",
-                                            style: GoogleFonts.poppins(
-                                                color: Colors.white,
-                                                fontSize: 14),
+                                      MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: InkWell(
+                                          onTap: ()async{
+
+                                          },
+                                          child: Container(
+                                            height: 40,
+                                            width: 120,
+                                            child: Center(
+                                              child: Text(
+                                                "Attach PDF",
+                                                style: GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontSize: 14),
+                                              ),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  AppColors.theme['primaryColor'],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              AppColors.theme['primaryColor'],
-                                          borderRadius:
-                                              BorderRadius.circular(8),
                                         ),
                                       )
                                     ],
@@ -749,6 +754,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     });
   }
+
   Future<void> handleSendButton()async{
 
     final prompt = _promptController.text.trim();
@@ -957,6 +963,102 @@ class _BouncingArrowState extends State<BouncingArrow>
         backgroundColor: Colors.blue.withOpacity(0.1),
         // radius: 25,
         child: const Icon(Icons.arrow_downward_outlined, color: Colors.black),
+      ),
+    );
+  }
+}
+
+
+class CopyFeedbackCard extends StatefulWidget {
+  final String textToCopy;
+
+  const CopyFeedbackCard({super.key, required this.textToCopy});
+
+  @override
+  State<CopyFeedbackCard> createState() => _CopyFeedbackCardState();
+}
+
+class _CopyFeedbackCardState extends State<CopyFeedbackCard> {
+  bool copied = false;
+
+  bool isEnter = false;
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.theme['primaryColor']!.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.theme['primaryColor']!.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(2, 4),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              "If you found this response helpful, feel free to copy and share it!",
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+
+              onTap: () async {
+                await Clipboard.setData(ClipboardData(text: widget.textToCopy));
+                setState(() {
+                  copied = true;
+                });
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    setState(() => copied = false);
+                  }
+                });
+
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   SnackBar(
+                //     content: const Text("Response copied to clipboard!"),
+                //     backgroundColor: AppColors.theme['primaryColor'],
+                //     behavior: SnackBarBehavior.floating,
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //   ),
+                // );
+
+                WebToasts.showToastification("Confirmation", "Response copied to clipboard!", Icon(Icons.copy), context) ;
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: copied
+                      ? AppColors.theme['primaryColor']
+                      : AppColors.theme['primaryColor']!.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  copied ? "Copied!" : "Copy",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: copied ? Colors.white : AppColors.theme['primaryColor'],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
