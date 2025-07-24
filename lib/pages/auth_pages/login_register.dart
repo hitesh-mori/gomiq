@@ -413,7 +413,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                   hintText: 'Enter username',
                   isNumber: false,
                   controller: _usernameController,
-                  prefixicon: Icon(Icons.email_outlined),
+                  prefixicon: Icon(Icons.drive_file_rename_outline),
                   obsecuretext: false,
                   onFieldSubmitted: (_) => handleRegister(),
                   textInputAction: TextInputAction.done,
